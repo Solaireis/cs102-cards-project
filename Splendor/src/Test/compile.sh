@@ -1,1 +1,1 @@
-javac -d . $(find src -name "*.java")
+javac -d ../../classes $(find .. -name "*.java")

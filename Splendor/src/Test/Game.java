@@ -1,4 +1,6 @@
-package PlayForFun;
+
+package Test;
+
 import Cards.DevelopmentCard.*;
 import Cards.Token.TokenBank;
 import Player.Player;

@@ -1,1 +1,3 @@
-java -cp ../../classes PlayForFun.Game
+
+java -cp ../../classes Test.Game
+

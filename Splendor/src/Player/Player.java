@@ -1,11 +1,12 @@
 /*
-This player class store the information of players: points, bonus owned, tokens owned, developmentCard owned
+This player class store the information of a single player object
+A player has points, bonus owned, tokens owned, developmentCard owned, developmentCard reversed, noble owned
 */
 package Player;
 
 import Cards.DevelopmentCard.*;
 import Cards.Token.*;
-
+import Cards.Noble.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 

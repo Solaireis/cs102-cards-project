@@ -1,3 +1,7 @@
+/*
+This is a AbstractCard class stores the shared attributes of card ojects, which can be used for both
+Development cards and Noble cards
+*/
 package Cards.AbstractCard;
 import Cards.Token.TokenBank;
 

@@ -61,4 +61,3 @@ public class DevelopmentCard {
         return color + " (" + points + "pt)" + " cost[Bk=" + blackCost + ", W=" + whiteCost + ", R=" + redCost + ", Bl=" + blueCost + ", G=" + greenCost + "]";
     }
 }
-

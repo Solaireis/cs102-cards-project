@@ -23,6 +23,7 @@ public class Player {
     private HashMap<String, Integer> playerTokens = new HashMap<>();
     private HashMap<String, Integer> playerBonuses = new HashMap<>();
     private ArrayList<DevelopmentCard> playerDevelopmentCards = new ArrayList<>();
+    private ArrayList<Noble> playerNobles = new ArrayList<>();
     private int playerPoints = 0;
 
     public Player(){
@@ -77,13 +78,31 @@ public class Player {
         playerTokens.put(color, t - amount);
     }
 
-    public void addCard(DevelopmentCard card) {
+    public void addDevelopmentCard(DevelopmentCard card) {
         playerDevelopmentCards.add(card);
         playerPoints += card.getPoints();
 
         // card color becomes permanent bonus (discount) for that color
         String bonusColor = card.getBonus();
         playerBonuses.put(bonusColor, playerBonuses.get(bonusColor) + 1);
+    }
+
+    public int totalDevelopementCards() {
+        return playerDevelopmentCards.size();
+    }
+
+    public void addNobles(Noble noble){
+        playerNobles.add(noble);
+        playerPoints += noble.getPoints();
+    }
+    
+
+    public ArrayList<Noble> getPlayerNobles(){
+        return new ArrayList<>(playerNobles);
+    }
+
+    public int totalNobles() {
+        return playerNobles.size();
     }
 
     public void printStatus() {

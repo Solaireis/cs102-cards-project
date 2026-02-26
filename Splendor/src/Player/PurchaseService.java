@@ -55,7 +55,7 @@ public class PurchaseService {
                 tb.add(TokenBank.GOLD, payWithGold);
             }
         }
-        p.addCard(c);
+        p.addDevelopmentCard(c);
     }
 
 }

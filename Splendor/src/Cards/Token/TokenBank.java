@@ -33,7 +33,7 @@ public class TokenBank{
         tokens.put(GOLD, new Token(GOLD, 5));
     }
 
-    // Getter to get the amount of the token in the bank
+    // Getter, get the amount of the specific color token in the bank
     // get(color) is the method to get the token Object with the color we want
     // getAmount() is the method in the token class to get the Amount of that token object. 
     public int get(String color) {

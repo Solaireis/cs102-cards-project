@@ -27,13 +27,13 @@ public class DevelopmentCardFaceUP {
     // Is like we have 3 rows of card on the table and this is use to point which row we want
     private ArrayList<DevelopmentCard> getFaceUp(int level) {
         if (level == 1){
-            return faceUp1;
+            return new ArrayList<>(faceUp1);
         }
         if (level == 2){
-            return faceUp2;
+            return new ArrayList<>(faceUp2);
         }
         if (level == 3){
-            return faceUp3;
+            return new ArrayList<>(faceUp3);
         }
         throw new IllegalArgumentException("Invalid level: " + level);
     }

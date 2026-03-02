@@ -1,17 +1,21 @@
-
 package Test;
 
 import Cards.DevelopmentCard.*;
 import Cards.Token.TokenBank;
+import Cards.Noble.Noble;
+import Cards.Noble.NobleDeck;
 import Player.Player;
 import Player.PurchaseService;
+import Player.NobleAttractService;
 
 import java.util.HashSet;
 import java.util.Scanner;
 
 public class Game {
 
-    private static final String[] TAKE_COLORS = { TokenBank.WHITE, TokenBank.BLUE, TokenBank.GREEN, TokenBank.RED, TokenBank.BLACK };
+    private static final String[] TAKE_COLORS = {
+            TokenBank.WHITE, TokenBank.BLUE, TokenBank.GREEN, TokenBank.RED, TokenBank.BLACK
+    };
 
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
@@ -20,14 +24,24 @@ public class Game {
         DevelopmentCardDesk developmentDesk = new DevelopmentCardDesk();
         DevelopmentCardFaceUP developmentFaceUp = new DevelopmentCardFaceUP(developmentDesk);
 
+        NobleDeck nobleDeck = new NobleDeck();             
+        NobleAttractService nobleService = new NobleAttractService();
+
         Player player = new Player();
 
         while (player.getPoints() < 15) {
             System.out.println("\n==============================");
             System.out.println("BANK: ");
             tb.printBank();
+
             System.out.println("PLAYER: ");
             player.printStatus();
+
+            System.out.println("\nNOBLES ON TABLE:");
+            for (int i = 0; i < nobleDeck.getNobles().size(); i++) {
+                System.out.println(i + ": " + nobleDeck.getNobles().get(i));
+            }
+
             System.out.println();
             developmentFaceUp.printMarket();
 
@@ -40,8 +54,16 @@ public class Game {
 
             if (choice == 1) {
                 takeThreeTokens(sc, tb, player);
+
+               
+                awardNobleIfAny(nobleService, player, nobleDeck, sc);
+
             } else if (choice == 2) {
                 buyCard(sc, tb, player, developmentFaceUp, developmentDesk);
+
+
+                awardNobleIfAny(nobleService, player, nobleDeck, sc);
+
             } else if (choice == 3) {
                 System.out.println("Quit game.");
                 break;
@@ -51,12 +73,18 @@ public class Game {
         }
 
         if (player.getPoints() >= 15) {
-            System.out.println("\n You reached 15 points! You win!");
+            System.out.println("\nYou reached 15 points! You win!");
         }
     }
 
-//-----------------------------------------------------------------------------------------------------------------    
-    // Helper function 1 : For player to take any three tokens but they can own maximum 10 tokens.
+    private static void awardNobleIfAny(NobleAttractService service, Player player, NobleDeck deck, Scanner sc) {
+        Noble gained = service.awardNobleIfPossible(player, deck, sc);
+        if (gained != null) {
+            System.out.println("Noble gained: " + gained);
+        }
+    }
+
+    //-----------------------------------------------------------------------------------------------------------------
     private static void takeThreeTokens(Scanner sc, TokenBank tb, Player player) {
 
         if (player.totalTokens() + 3 > 10) {
@@ -70,7 +98,6 @@ public class Game {
         String b = sc.next().toUpperCase();
         String c = sc.next().toUpperCase();
 
-        // must be different + not GOLD
         HashSet<String> set = new HashSet<>();
         set.add(a);
         set.add(b);
@@ -85,7 +112,6 @@ public class Game {
             return;
         }
 
-        // must be valid and tb must have enough
         for (String color : set) {
             if (!isTakeColor(color)) {
                 System.out.println("Invalid color: " + color);
@@ -97,7 +123,6 @@ public class Game {
             }
         }
 
-        // perform transfer
         for (String color : set) {
             tb.remove(color, 1);
             player.addTokens(color, 1);
@@ -106,8 +131,7 @@ public class Game {
         System.out.println("Tokens taken successfully.");
     }
 
-//------------------------------------------------------------------------------------------------------------------------------------------------------------------
-    // Helper function 2 : For player to buy a development card
+    //------------------------------------------------------------------------------------------------------------------------------------------------------------------
     private static void buyCard(Scanner sc, TokenBank tb, Player player, DevelopmentCardFaceUP developmentFaceUp, DevelopmentCardDesk developmentDesk) {
 
         System.out.print("Choose level (1/2/3): ");
@@ -135,15 +159,14 @@ public class Game {
 
     private static boolean isTakeColor(String c) {
         for (String color : TAKE_COLORS) {
-            if (color.equals(c))
-                return true;
+            if (color.equals(c)) return true;
         }
         return false;
     }
 
     private static int safeInt(Scanner sc) {
         while (!sc.hasNextInt()) {
-            sc.next(); // discard
+            sc.next();
             System.out.print("Enter a number: ");
         }
         return sc.nextInt();

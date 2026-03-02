@@ -107,6 +107,6 @@ public class Player {
 
     public void printStatus() {
         System.out.println("Player points=" + playerPoints + " tokens=" + playerTokens 
-        + " bonuses=" + playerBonuses + " totalTokens=" + totalTokens());
+        + " bonuses=" + playerBonuses + " nobles=" + playerNobles + " totalTokens=" + totalTokens());
     }
 }

@@ -13,14 +13,14 @@ import Cards.Token.TokenBank;
 
 public class Player {
 
-    // HashMap to store the tokens and Bonuses, basically they are the same object but token is temporary while bonus is permenent
+    // HashMap to store the tokens and Bonuses, basically they are the same object but token is temporary while bonus is permanent
     // So use two differet list to store them.
 
     // Why using HashMap for Tokens but ArrayList for Cards is because, For tokens, each tokens have a name and value,
-    // the name is a constant but value is a varible, so that varible is mapped to a constant, so whenever i want to change
+    // the name is a constant but value is a varible, so that variable is mapped to a constant, so whenever i want to change
     // or search for that value i can just search for the constant name, then the system will tells me the value it corresponding to.
-    // However, the development card has not variables which needs to be changed manually, so there is not need to search for a 
-    // specific card. System can just randomly draw cards from the desk and place it on the table and for player to buy it.
+    // However, the development card has no variables which needs to be changed manually, so there is not need to search for a 
+    // specific card. System can just randomly draw cards from the deck and place it on the table and for player to buy it.
     private HashMap<String, Integer> playerTokens = new HashMap<>();
     private HashMap<String, Integer> playerBonuses = new HashMap<>();
     private ArrayList<DevelopmentCard> playerDevelopmentCards = new ArrayList<>();
@@ -72,8 +72,9 @@ public class Player {
 
     public void removeTokens(String color, int amount) {
         int t = playerTokens.get(color);
+
         if (t < amount){
-            throw new IllegalArgumentException("Player not enough " + color);
+            throw new IllegalArgumentException("Player does not have enough " + color + " tokens");
         }
 
         playerTokens.put(color, t - amount);
@@ -96,7 +97,6 @@ public class Player {
         playerNobles.add(noble);
         playerPoints += noble.getPoints();
     }
-    
 
     public ArrayList<Noble> getPlayerNobles(){
         return new ArrayList<>(playerNobles);
@@ -107,8 +107,8 @@ public class Player {
     }
 
     public void printStatus() {
-        System.out.println("Player points=" + playerPoints + " tokens=" + playerTokens 
-        + " bonuses=" + playerBonuses + " nobles=" + playerNobles + " totalTokens=" + totalTokens());
+        System.out.println("Player points = " + playerPoints + " | tokens = " + playerTokens 
+        + " | bonuses = " + playerBonuses + " | nobles = " + playerNobles + " | totalTokens = " + totalTokens());
     }
 
 }

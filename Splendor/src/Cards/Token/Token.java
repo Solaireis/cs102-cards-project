@@ -36,7 +36,6 @@ public class Token {
         amount -= value;
     }
 
-
     @Override
     public String toString() {
         return color + "=" + amount;

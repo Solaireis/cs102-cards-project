@@ -1,9 +1,9 @@
 package Cards.Noble;
 
-import java.util.ArrayList;
-
 import Cards.Token.TokenBank;
 import Player.Player;
+import java.util.ArrayList;
+import java.util.Collections;
 
 public class NobleDeck {
 
@@ -11,6 +11,7 @@ public class NobleDeck {
 
     public NobleDeck() {
         createNobles();
+        shuffleDesks();
     }
 
     // Create all nobles, there are 10 nobles in total
@@ -29,6 +30,19 @@ public class NobleDeck {
         nobles.add(new Noble(3, 3, 3, 3, 0, 0)); // 3B + 3W + 3R
         nobles.add(new Noble(3, 3, 3, 0, 3, 0)); // 3B + 3W + 3Bl
         nobles.add(new Noble(3, 3, 0, 3, 0, 3)); // 3B + 3R + 3G
+    }
+
+    // Method in the collection to automatically shuffle the order of the cards for every level.
+    private void shuffleDesks() {
+        Collections.shuffle(nobles);
+    }
+
+    // Method to draw cards to place on the table for each level
+    public Noble draw(){
+        if (isEmpty()) {
+            throw new IllegalArgumentException("level 1 development cards are not enough");
+        }
+        return nobles.remove(0);
     }
 
     // Getter, get the number of Noble in the desk

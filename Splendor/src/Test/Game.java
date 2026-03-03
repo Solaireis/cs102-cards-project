@@ -1,13 +1,13 @@
 package Test;
 
 import Cards.DevelopmentCard.*;
-import Cards.Token.TokenBank;
 import Cards.Noble.Noble;
 import Cards.Noble.NobleDeck;
+import Cards.Noble.NobleFaceUP;
+import Cards.Token.TokenBank;
+import Player.NobleAttractService;
 import Player.Player;
 import Player.PurchaseService;
-import Player.NobleAttractService;
-
 import java.util.HashSet;
 import java.util.Scanner;
 
@@ -24,7 +24,8 @@ public class Game {
         DevelopmentCardDeck developmentDesk = new DevelopmentCardDeck();
         DevelopmentCardFaceUP developmentFaceUp = new DevelopmentCardFaceUP(developmentDesk);
 
-        NobleDeck nobleDeck = new NobleDeck();             
+        NobleDeck nobleDeck = new NobleDeck();  
+        NobleFaceUP nobleFaceUp = new NobleFaceUP(nobleDeck, 4);    // change 4 to amt of players later           
         NobleAttractService nobleService = new NobleAttractService();
 
         Player player = new Player();
@@ -37,10 +38,13 @@ public class Game {
             System.out.println("PLAYER: ");
             player.printStatus();
 
-            System.out.println("\nNOBLES ON TABLE:");
-            for (int i = 0; i < nobleDeck.getNobles().size(); i++) {
-                System.out.println(i + ": " + nobleDeck.getNobles().get(i));
-            }
+            // System.out.println("\nNOBLES ON TABLE:");
+            // for (int i = 0; i < nobleDeck.getNobles().size(); i++) {
+            //     System.out.println(i + ": " + nobleDeck.getNobles().get(i));
+            // }
+
+            System.out.println();
+            nobleFaceUp.printMarket();
 
             System.out.println();
             developmentFaceUp.printMarket();

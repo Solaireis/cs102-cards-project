@@ -3,7 +3,7 @@ package Test;
 import Cards.DevelopmentCard.*;
 import Cards.Token.TokenBank;
 import Cards.Noble.Noble;
-import Cards.Noble.NobleDesk;
+import Cards.Noble.NobleDeck;
 import Player.Player;
 import Player.PurchaseService;
 import Player.NobleAttractService;
@@ -24,7 +24,7 @@ public class Game {
         DevelopmentCardDesk developmentDesk = new DevelopmentCardDesk();
         DevelopmentCardFaceUP developmentFaceUp = new DevelopmentCardFaceUP(developmentDesk);
 
-        NobleDesk nobleDeck = new NobleDesk();             
+        NobleDeck nobleDeck = new NobleDeck();             
         NobleAttractService nobleService = new NobleAttractService();
 
         Player player = new Player();
@@ -77,7 +77,7 @@ public class Game {
         }
     }
 
-    private static void awardNobleIfAny(NobleAttractService service, Player player, NobleDesk deck, Scanner sc) {
+    private static void awardNobleIfAny(NobleAttractService service, Player player, NobleDeck deck, Scanner sc) {
         Noble gained = service.awardNobleIfPossible(player, deck, sc);
         if (gained != null) {
             System.out.println("Noble gained: " + gained);

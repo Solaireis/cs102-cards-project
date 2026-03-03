@@ -8,8 +8,11 @@ import Cards.Token.TokenBank;
 import Player.NobleAttractService;
 import Player.Player;
 import Player.PurchaseService;
+import Player.NobleAttractService;
 import java.util.HashSet;
 import java.util.Scanner;
+//use the properties file
+import java.util.Properties;
 
 public class Game {
 
@@ -17,6 +20,7 @@ public class Game {
             TokenBank.WHITE, TokenBank.BLUE, TokenBank.GREEN, TokenBank.RED, TokenBank.BLACK
     };
 
+  
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
 

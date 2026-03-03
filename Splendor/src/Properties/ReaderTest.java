@@ -8,6 +8,7 @@ public class ReaderTest {
         try{
             Reader reader = new Reader(); // Create an instance of Reader
             System.out.println(reader.getPrestigePointToWin()); 
+            System.out.println(reader.getNumOfPlayers());
             
             // Call the method on the instance
         } catch ( Exception e){

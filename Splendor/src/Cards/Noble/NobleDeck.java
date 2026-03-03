@@ -11,7 +11,7 @@ public class NobleDeck {
 
     public NobleDeck() {
         createNobles();
-        shuffleDesks();
+        shuffleDeck();
     }
 
     // Create all nobles, there are 10 nobles in total
@@ -33,14 +33,14 @@ public class NobleDeck {
     }
 
     // Method in the collection to automatically shuffle the order of the cards for every level.
-    private void shuffleDesks() {
+    private void shuffleDeck() {
         Collections.shuffle(nobles);
     }
 
     // Method to draw cards to place on the table for each level
     public Noble draw(){
         if (isEmpty()) {
-            throw new IllegalArgumentException("level 1 development cards are not enough");
+            throw new IllegalArgumentException("Noble cards are not enough");
         }
         return nobles.remove(0);
     }

@@ -9,13 +9,17 @@ import java.util.ArrayList;
 public class NobleFaceUP {
 
     private ArrayList<Noble> faceUp = new ArrayList<>();
-    int cardAmt;
+    private int cardAmt;
 
     // Constructor, initally put cardAmt nobles face up
     public NobleFaceUP(NobleDeck desk, int playerAmt) {
         cardAmt = playerAmt + 1;
+        
         for (int i = 0; i < cardAmt; i++) {
-            faceUp.add(desk.draw());
+            Noble n = desk.draw();
+            if(n != null){
+                faceUp.add(n);
+            }
         }
     }
 
@@ -30,13 +34,8 @@ public class NobleFaceUP {
 
     public void printMarket() {
         System.out.println("=== Noble ===");
-        printRow(faceUp);
-    }
-
-
-    private void printRow(ArrayList<Noble> row) {
-        for (int i = 0; i < row.size(); i++) {
-            System.out.println("[" + i + "] " + row.get(i));
+        for (int i = 0; i < faceUp.size(); i++) {
+            System.out.println("[" + i + "] " + faceUp.get(i));
         }
     }
 }

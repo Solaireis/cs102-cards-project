@@ -21,7 +21,7 @@ public class Game {
         Scanner sc = new Scanner(System.in);
 
         TokenBank tb = new TokenBank();
-        DevelopmentCardDesk developmentDesk = new DevelopmentCardDesk();
+        DevelopmentCardDeck developmentDesk = new DevelopmentCardDeck();
         DevelopmentCardFaceUP developmentFaceUp = new DevelopmentCardFaceUP(developmentDesk);
 
         NobleDeck nobleDeck = new NobleDeck();             
@@ -132,7 +132,7 @@ public class Game {
     }
 
     //------------------------------------------------------------------------------------------------------------------------------------------------------------------
-    private static void buyCard(Scanner sc, TokenBank tb, Player player, DevelopmentCardFaceUP developmentFaceUp, DevelopmentCardDesk developmentDesk) {
+    private static void buyCard(Scanner sc, TokenBank tb, Player player, DevelopmentCardFaceUP developmentFaceUp, DevelopmentCardDeck developmentDesk) {
 
         System.out.print("Choose level (1/2/3): ");
         int level = safeInt(sc);

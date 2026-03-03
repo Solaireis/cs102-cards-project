@@ -7,7 +7,7 @@ import Player.Player;
 
 public class NobleDeck {
 
-    private final ArrayList<Noble> nobles = new ArrayList<>();
+    private ArrayList<Noble> nobles = new ArrayList<>();
 
     public NobleDeck() {
         createNobles();

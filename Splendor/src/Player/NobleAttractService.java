@@ -10,14 +10,14 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 import Cards.Noble.Noble;
-import Cards.Noble.NobleDeck;
+import Cards.Noble.NobleDesk;
 
 public class NobleAttractService {
 
     // Awards One noble to the player if possible.
     // return the Noble awarded, or null if player qualifies for nothing.
 
-    public Noble awardNobleIfPossible(Player player, NobleDeck deck, Scanner sc) {
+    public Noble awardNobleIfPossible(Player player, NobleDesk deck, Scanner sc) {
         ArrayList<Noble> eligible = deck.getAttractableNobles(player);
 
         if (eligible.isEmpty()) {

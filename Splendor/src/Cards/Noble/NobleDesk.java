@@ -5,11 +5,11 @@ import java.util.ArrayList;
 import Cards.Token.TokenBank;
 import Player.Player;
 
-public class NobleDeck {
+public class NobleDesk {
 
     private final ArrayList<Noble> nobles = new ArrayList<>();
 
-    public NobleDeck() {
+    public NobleDesk() {
         createNobles();
     }
 

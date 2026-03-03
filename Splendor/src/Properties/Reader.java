@@ -12,14 +12,15 @@ public class Reader {
     public String filePath = rootPath + "config.properties";
     public Properties configProps = new Properties();
 
-
+    //working
     public int getPrestigePointToWin() throws IOException{
         configProps.load(new FileInputStream(filePath));
         int sum = Integer.parseInt(configProps.getProperty("prestigePointsToWin"));
         return sum;
     } 
-    public int getnNumOfPlayers(){
-        int sum = 0;
+    public int getNumOfPlayers() throws IOException{
+        configProps.load(new FileInputStream(filePath));
+        int sum = Integer.parseInt(configProps.getProperty("numOfPlayers"));
         return sum;
     }
 }

@@ -8,14 +8,14 @@ import java.util.Collections;
 
 import Cards.Token.TokenBank;
 
-public class DevelopmentCardDesk {
+public class DevelopmentCardDeck {
 
     // ArrayList to store the different card with different level.
     private ArrayList<DevelopmentCard> level1Deck;
     private ArrayList<DevelopmentCard> level2Deck;
     private ArrayList<DevelopmentCard> level3Deck;
 
-    public DevelopmentCardDesk() {
+    public DevelopmentCardDeck() {
         level1Deck = new ArrayList<>();
         level2Deck = new ArrayList<>();
         level3Deck = new ArrayList<>();

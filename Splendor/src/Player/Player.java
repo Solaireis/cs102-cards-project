@@ -4,11 +4,12 @@ A player has points, bonus owned, tokens owned, developmentCard owned, developme
 */
 package Player;
 
-import Cards.DevelopmentCard.*;
-import Cards.Token.*;
-import Cards.Noble.*;
 import java.util.ArrayList;
 import java.util.HashMap;
+
+import Cards.DevelopmentCard.DevelopmentCard;
+import Cards.Noble.Noble;
+import Cards.Token.TokenBank;
 
 public class Player {
 
@@ -109,4 +110,5 @@ public class Player {
         System.out.println("Player points=" + playerPoints + " tokens=" + playerTokens 
         + " bonuses=" + playerBonuses + " nobles=" + playerNobles + " totalTokens=" + totalTokens());
     }
+
 }

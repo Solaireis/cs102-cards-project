@@ -1,5 +1,5 @@
 /*
-This Token class stores the information of a singel colour Token object with the repective amount.
+This Token class stores the information of a single colour Token object with the repective amount.
 */
 package Cards.Token;
 
@@ -18,7 +18,7 @@ public class Token {
     }
 
     // Get the amount of the token in the bank, this amount is initialised the TokanBank class with
-    // a initial value of 7 and 5
+    // an initial value of 7 (per token) and 5 (gold)
     public int getAmount() {
         return amount;
     }
@@ -28,7 +28,7 @@ public class Token {
         amount += value;
     }
 
-    // Remvoe the tokens from the bank when the user takes the tokens
+    // Remove the tokens from the bank when the user takes the tokens
     public void remove(int value) {
         if (amount < value) {
             throw new IllegalArgumentException(color + " token not enough");

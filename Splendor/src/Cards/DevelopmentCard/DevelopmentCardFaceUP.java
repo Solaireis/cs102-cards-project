@@ -15,7 +15,7 @@ public class DevelopmentCardFaceUP {
 
     // Constructor to call the draw function in the development card desk class and put it into a arraylist with only 4 elements
     // which simulate the action of place the card from the deck to the table
-    public DevelopmentCardFaceUP(DevelopmentCardDesk desk){
+    public DevelopmentCardFaceUP(DevelopmentCardDeck desk){
         for (int i = 0; i < 4; i++) {
             faceUp1.add(desk.drawLevel1());
             faceUp2.add(desk.drawLevel2());
@@ -27,13 +27,13 @@ public class DevelopmentCardFaceUP {
     // Is like we have 3 rows of card on the table and this is use to point which row we want
     private ArrayList<DevelopmentCard> getFaceUp(int level) {
         if (level == 1){
-            return new ArrayList<>(faceUp1);
+            return faceUp1;
         }
         if (level == 2){
-            return new ArrayList<>(faceUp2);
+            return faceUp2;
         }
         if (level == 3){
-            return new ArrayList<>(faceUp3);
+            return faceUp3;
         }
         throw new IllegalArgumentException("Invalid level: " + level);
     }
@@ -48,7 +48,7 @@ public class DevelopmentCardFaceUP {
     }
 
     // Method to revove the card and refill it immediately
-    public void removeAndRefill(int level, int index, DevelopmentCardDesk card) {
+    public void removeAndRefill(int level, int index, DevelopmentCardDeck card) {
         ArrayList<DevelopmentCard> row = getFaceUp(level);
         row.remove(index);
 

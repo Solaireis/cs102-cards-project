@@ -14,6 +14,9 @@ public class NobleFaceUP {
     // Constructor, initally put cardAmt nobles face up
     public NobleFaceUP(NobleDeck desk, int playerAmt) {
         cardAmt = playerAmt + 1;
+        if (cardAmt == 2) {
+            cardAmt += 1;
+        }
         
         for (int i = 0; i < cardAmt; i++) {
             Noble n = desk.draw();

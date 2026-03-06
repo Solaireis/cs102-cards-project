@@ -4,12 +4,11 @@ A player has points, bonus owned, tokens owned, developmentCard owned, developme
 */
 package Player;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-
 import Cards.DevelopmentCard.DevelopmentCard;
 import Cards.Noble.Noble;
 import Cards.Token.TokenBank;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 public class Player {
 
@@ -25,9 +24,11 @@ public class Player {
     private HashMap<String, Integer> playerBonuses = new HashMap<>();
     private ArrayList<DevelopmentCard> playerDevelopmentCards = new ArrayList<>();
     private ArrayList<Noble> playerNobles = new ArrayList<>();
+    private ArrayList<DevelopmentCard> playerReserves = new ArrayList<>();
     private int playerPoints = 0;
+    private String name;
 
-    public Player(){
+    public Player(String name){
         // start at 0 tokens
         playerTokens.put(TokenBank.WHITE, 0);
         playerTokens.put(TokenBank.BLUE, 0);
@@ -42,6 +43,8 @@ public class Player {
         playerBonuses.put(TokenBank.GREEN, 0);
         playerBonuses.put(TokenBank.RED, 0);
         playerBonuses.put(TokenBank.BLACK, 0); 
+
+        this.name = name;
     }
     
     public int getTokens(String color){
@@ -54,6 +57,10 @@ public class Player {
 
     public int getPoints(){
         return playerPoints;
+    }
+
+    public String getName() {
+        return name;
     }
 
 
@@ -89,7 +96,7 @@ public class Player {
         playerBonuses.put(bonusColor, playerBonuses.get(bonusColor) + 1);
     }
 
-    public int totalDevelopementCards() {
+    public int totalDevelopmentCards() {
         return playerDevelopmentCards.size();
     }
 
@@ -106,9 +113,25 @@ public class Player {
         return playerNobles.size();
     }
 
+    public DevelopmentCard getReserveCard(int index) {
+        return playerReserves.get(index);
+    }
+
+    public void addReserve(DevelopmentCard card) {
+        playerReserves.add(card);
+    }
+
+    public void buyReserve(DevelopmentCard card) {
+        playerReserves.remove(card);
+    }
+
+    public int totalReserves() {
+        return playerReserves.size();
+    }
+
     public void printStatus() {
         System.out.println("Player points = " + playerPoints + " | tokens = " + playerTokens 
-        + " | bonuses = " + playerBonuses + " | nobles = " + playerNobles + " | totalTokens = " + totalTokens());
+        + " | bonuses = " + playerBonuses + " | reserves = " + playerReserves + " | nobles = " + playerNobles + " | totalTokens = " + totalTokens() + " | totalReserves = " + totalReserves());
     }
 
 }

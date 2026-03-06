@@ -20,17 +20,36 @@ public class TokenBank{
     // List of tokens, which store the color of the token and the token object. 
     private HashMap<String, Token> tokens;
 
-    public TokenBank() {
+    public TokenBank(int numOfPlayers) {
 
         tokens = new HashMap<>();
 
         // One colour is mapping to a specific token object.
-        tokens.put(WHITE, new Token(WHITE, 7));
-        tokens.put(BLUE, new Token(BLUE, 7));
-        tokens.put(GREEN, new Token(GREEN, 7));
-        tokens.put(RED, new Token(RED, 7));
-        tokens.put(BLACK, new Token(BLACK, 7));
-        tokens.put(GOLD, new Token(GOLD, 5));
+
+        switch(numOfPlayers) {
+            case 2:
+                tokens.put(WHITE, new Token(WHITE, 4));
+                tokens.put(BLUE, new Token(BLUE, 4));
+                tokens.put(GREEN, new Token(GREEN, 4));
+                tokens.put(RED, new Token(RED, 4));
+                tokens.put(BLACK, new Token(BLACK, 4));
+                tokens.put(GOLD, new Token(GOLD, 5));
+            case 3:
+                tokens.put(WHITE, new Token(WHITE, 5));
+                tokens.put(BLUE, new Token(BLUE, 5));
+                tokens.put(GREEN, new Token(GREEN, 5));
+                tokens.put(RED, new Token(RED, 5));
+                tokens.put(BLACK, new Token(BLACK, 5));
+                tokens.put(GOLD, new Token(GOLD, 5));
+            default:
+                tokens.put(WHITE, new Token(WHITE, 7));
+                tokens.put(BLUE, new Token(BLUE, 7));
+                tokens.put(GREEN, new Token(GREEN, 7));
+                tokens.put(RED, new Token(RED, 7));
+                tokens.put(BLACK, new Token(BLACK, 7));
+                tokens.put(GOLD, new Token(GOLD, 5));
+        } 
+        
     }
 
     // Getter, get the amount of the specific color token in the bank

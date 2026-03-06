@@ -72,10 +72,13 @@ public class DevelopmentCardFaceUP {
     public void printMarket() {
         System.out.println("=== Market Level 1 ===");
         printRow(faceUp1);
+        System.out.println();
         System.out.println("=== Market Level 2 ===");
         printRow(faceUp2);
+        System.out.println();
         System.out.println("=== Market Level 3 ===");
         printRow(faceUp3);
+        System.out.println();
     }
 
 

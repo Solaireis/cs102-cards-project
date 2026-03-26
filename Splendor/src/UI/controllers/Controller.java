@@ -85,6 +85,7 @@ public class Controller {
         gameCloud5B.setImage(loadBackgroundImage("gameCloud5.png"));
     }
 
+    // Layering cloud backgrounds
     private void setupLayers() {
         bindFullScreen(gameSky);
 

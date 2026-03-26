@@ -9,7 +9,7 @@ import java.util.*;
 
 public class Game {
 
-    private static final String[] TAKE_COLORS = {
+    public static final String[] TAKE_COLORS = {
             TokenBank.WHITE, TokenBank.BLUE, TokenBank.GREEN, TokenBank.RED, TokenBank.BLACK
     };
 
@@ -51,8 +51,7 @@ public class Game {
         }
         if (numOfPlayers < 2) {
             numOfPlayers += 1;
-            //add computer player into player list
-            //players.add(new Computer());    Computer extends Player?  
+            players.add(new Computer());
         }
         
         
@@ -68,8 +67,6 @@ public class Game {
         boolean end = false;
         while (!end) {
             for (Player player : players) {
-                //if (player !instanceof Computer) then do the below
-                //else follow computer algorithm in separate class
                 
                 System.out.println();
                 System.out.println();
@@ -78,7 +75,7 @@ public class Game {
                 turnDisplay(players, player, tb, nobleDeck, nobleFaceUp, developmentFaceUp);
 
                 if (player instanceof Computer computer) {
-                    computer.turnAlgorithm();
+                    end = computer.turnAlgorithm(tb, developmentFaceUp, developmentDesk, winningCondition);
                 } else {
                     boolean quit = false;
                     boolean valid = false;
@@ -267,7 +264,7 @@ public class Game {
         player.addTokens(color, 2);
         
 
-        System.out.println("Player has taken 2 " + color + "tokens");
+        System.out.println("Player has taken 2 " + color + " tokens");
         return true;
 
 

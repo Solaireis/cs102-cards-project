@@ -20,7 +20,7 @@ public class PurchaseService {
             int amountNeedToPay = Math.max(0, cost - discount);   // Amount need to pay = original cost - Bonus, but what if i have more bonus than the original cost? then we take 0 instead.
                                                                 
             if (p.getTokens(color) < amountNeedToPay) {           // if i dont have enough token
-                if (p.getTokens(color) + hasgold > amountNeedToPay) { // check if the amount of gold token can pay it
+                if (p.getTokens(color) + hasgold >= amountNeedToPay) { // check if the amount of gold token can pay it
                     hasgold -= amountNeedToPay - p.getTokens(color);  // if can then deduct from total gold and check other colors
                 } else { 
                     return false;                                  // if still not enough then cannot buy

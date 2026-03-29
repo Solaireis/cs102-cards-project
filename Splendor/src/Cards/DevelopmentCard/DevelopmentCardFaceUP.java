@@ -83,7 +83,7 @@ public class DevelopmentCardFaceUP {
 
 
     private void printRow(ArrayList<DevelopmentCard> row) {
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < row.size(); i++) {
             System.out.println("[" + i + "] " + row.get(i));
         }
     }

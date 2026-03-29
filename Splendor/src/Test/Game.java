@@ -75,7 +75,7 @@ public class Game {
                 turnDisplay(players, player, tb, nobleDeck, nobleFaceUp, developmentFaceUp);
 
                 if (player instanceof Computer computer) {
-                    end = computer.turnAlgorithm(tb, developmentFaceUp, developmentDesk, winningCondition);
+                    end = computer.turnAlgorithm(tb, developmentFaceUp, developmentDesk, winningCondition, nobleDeck);
                 } else {
                     boolean quit = false;
                     boolean valid = false;

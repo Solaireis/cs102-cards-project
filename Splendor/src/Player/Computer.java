@@ -4,6 +4,7 @@ import java.util.*;
 
 import Cards.DevelopmentCard.*;
 import Cards.Token.*;
+import Cards.Noble.*;
 
 public class Computer extends Player {
     List<String> randomizedTokenColors = Arrays.asList(Test.Game.TAKE_COLORS);
@@ -13,11 +14,12 @@ public class Computer extends Player {
     }
 
     // returns end value
-    public boolean turnAlgorithm(TokenBank tb, DevelopmentCardFaceUP developmentFaceUp, DevelopmentCardDeck developmentDesk, int winningCondition) {
+    public boolean turnAlgorithm(TokenBank tb, DevelopmentCardFaceUP developmentFaceUp, DevelopmentCardDeck developmentDesk, int winningCondition, NobleDeck nobleDeck) {
         // current algorithm:
         // 1. looks for development cards it can buy
-        // 2. if there's none, take three random tokens
-        // 3. to-do: if cannot take three tokens, take two tokens
+        // 2. if cannot buy development cards, take three random tokens
+        // 3. if cannot take three tokens, take two tokens
+        // 4. to-do: if cannot take two tokens, reserve
 
         boolean valid = false;
 
@@ -29,13 +31,23 @@ public class Computer extends Player {
         // step 2
         if (!valid) {
             valid = computerTakeThreeTokens(tb);
-        }        
+        }
+
+        // step 3
+        if (!valid) {
+            valid = computerTakeTwoTokens(tb);
+        }
+
+        // step 4
+        if (!valid) {
+            valid = reserveCard(tb, developmentFaceUp, developmentDesk);
+        }
 
         // end turn
-        boolean end = false;
-        end = computerEndTurn(tb, winningCondition);
+        boolean end = computerEndTurn(tb, winningCondition);
 
         // award noble if any
+        computerAwardNobleIfAny(nobleDeck);
         
         return end;
     }
@@ -44,14 +56,32 @@ public class Computer extends Player {
 
     private boolean computerBuyCard(TokenBank tb, DevelopmentCardFaceUP developmentFaceUp, DevelopmentCardDeck developmentDesk) {
         DevelopmentCard currCard = null;
-        for (int level = 3; level >= 1; level--) {
-            for (int index = 0; index <= 3; index++) {
-                currCard = developmentFaceUp.getCard(level, index);
+
+        // from reserve
+        for (int index = 0; index < this.totalReserves(); index++) {
+            try {
+                currCard = this.getReserveCard(index);
                 if (PurchaseService.canBuy(this, currCard)) {
-                    PurchaseService.buy(this, currCard, tb);
-                    developmentFaceUp.removeAndRefill(level, index, developmentDesk);
+                    this.buyReserve(currCard);
                     System.out.println("Bought card: " + currCard);
                     return true;
+                }
+            } catch (Exception e) {
+            }
+        }
+
+        // from market
+        for (int level = 3; level >= 1; level--) {
+            for (int index = 0; index <= 3; index++) {
+                try {
+                    currCard = developmentFaceUp.getCard(level, index);
+                    if (PurchaseService.canBuy(this, currCard)) {
+                        PurchaseService.buy(this, currCard, tb);
+                        developmentFaceUp.removeAndRefill(level, index, developmentDesk);
+                        System.out.println("Bought card: " + currCard);
+                        return true;
+                    }
+                } catch (Exception e) {
                 }
             }
         }
@@ -89,6 +119,65 @@ public class Computer extends Player {
         return false;
     }
 
+    private boolean computerTakeTwoTokens(TokenBank tb) {
+        if (this.totalTokens() + 2 <= 10) {
+            Collections.shuffle(randomizedTokenColors);
+            String color = null;
+            int randomizedTokenColorsIndex = 0;
+            while (randomizedTokenColorsIndex < randomizedTokenColors.size()) {
+                String currColor = randomizedTokenColors.get(randomizedTokenColorsIndex);
+                if (tb.hasEnough(currColor, 4)) {
+                    color = currColor;
+                    break;
+                }
+                randomizedTokenColorsIndex++;
+            }
+            
+            if (color != null) {
+                System.out.print("Computer has taken 2 " + color + " tokens.");
+                tb.remove(color, 2);
+                this.addTokens(color, 2);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean reserveCard(TokenBank tb, DevelopmentCardFaceUP developmentFaceUp, DevelopmentCardDeck developmentDesk) {
+        if (this.totalReserves() == 3) {
+            return false;
+        }
+
+        DevelopmentCard chosen = null;
+        // try reserving index 0 of each level
+        for (int level = 1; level <= 3; level++) {
+            try {
+                chosen = developmentFaceUp.getCard(level, 0);
+                developmentFaceUp.removeAndRefill(level, 0, developmentDesk);
+                break;
+            } catch (Exception e) {
+            }
+        }
+
+        if (chosen == null) {
+            return false;
+        }
+
+        this.addReserve(chosen);
+        if (tb.get("GOLD") > 0) {
+            tb.remove("GOLD", 1);
+            this.addTokens("GOLD", 1);
+            System.out.println("Gold token added to inventory");
+        } else {
+            System.out.println("No remaining gold tokens");
+        }
+
+        System.out.println("Card" + chosen + "reserved by computer.");
+        return true;
+    }
+
+    //-----------------------------------------------------------------------------------------------------------------
+
     private boolean computerEndTurn(TokenBank tb, int winningCondition) {
         while (this.totalTokens() > 10) {
             // remove random token
@@ -108,5 +197,20 @@ public class Computer extends Player {
             return true;
         }
         return false;
+    }
+
+    private void computerAwardNobleIfAny(NobleDeck deck) {
+        ArrayList<Noble> eligible = deck.getAttractableNobles(this);
+
+        if (eligible.isEmpty()) {
+            return;
+        }
+
+        Noble chosen = eligible.get(0);     // gets first eligible noble no matter what
+
+        this.addNobles(chosen);
+        deck.removeNoble(chosen);
+
+        System.out.println("Noble gained: " + chosen);
     }
 }

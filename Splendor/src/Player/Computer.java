@@ -19,7 +19,7 @@ public class Computer extends Player {
         // 1. looks for development cards it can buy
         // 2. if cannot buy development cards, take three random tokens
         // 3. if cannot take three tokens, take two tokens
-        // 4. to-do: if cannot take two tokens, reserve
+        // 4. if cannot take two tokens, reserve
 
         boolean valid = false;
 

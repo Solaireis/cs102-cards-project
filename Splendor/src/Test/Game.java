@@ -13,27 +13,35 @@ public class Game {
             TokenBank.WHITE, TokenBank.BLUE, TokenBank.GREEN, TokenBank.RED, TokenBank.BLACK
     };
 
-  
+ 
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
 
         //need to change path of file that reader is reading from
         //no need number of players
         int winningCondition = 15;  //default if loading error
-        try{
-            Reader reader = new Reader(); // Create an instance of Reader
-            winningCondition = reader.getPrestigePointToWin(); 
-            
-            // Call the method on the instance
-        } catch ( Exception e){
-                System.out.println("Cant find file man");
-        }
+        
 
 
         ArrayList<Player> players = new ArrayList<>();
 
         //list of players
+        // numb of players is obtained from properties file
         int numOfPlayers = 0;
+        try{
+            Reader reader = new Reader(); // Create an instance of Reader
+            winningCondition = reader.getPrestigePointToWin(); 
+            numOfPlayers = reader.getNumOfPlayers();
+            //Test commands to verify if the properties file works
+            System.out.println(winningCondition);
+            System.out.println(numOfPlayers);
+            System.out.println("File found");
+
+            // Call the method on the instance
+        } catch ( Exception e){
+                System.out.println("Cant find file");
+        }
+        
         while (numOfPlayers == 0) {
             System.out.print("Enter number of players: ");
             numOfPlayers = sc.nextInt();
@@ -42,6 +50,9 @@ public class Game {
                 System.out.println("At least 1 player needed");
                 continue;
             }
+            
+        }
+        if (numOfPlayers > 0){
             for (int i = 1; i <= numOfPlayers; i++) {
                 System.out.printf("Player %d Name: ", i);
                 String name = sc.nextLine();

@@ -23,7 +23,6 @@ public class Game {
         System.out.print("Your choice: ");
     }
 
- 
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
 
@@ -117,7 +116,6 @@ public class Game {
                                 System.out.println("Input a number!");
                                 sc.nextLine(); // clear the invalid input
                                 choiceMsg();
-
                             }
                         }
                         

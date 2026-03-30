@@ -1,3 +1,4 @@
 #!/bin/bash
 #from Splendor terminal
-javac -d classes -cp "src:lib/*" src/Test/Game.java
+#if run here then
+cd ../../ && javac -d classes -cp "src:lib/*" src/Test/Game.java

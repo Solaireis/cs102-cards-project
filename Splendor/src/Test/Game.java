@@ -13,6 +13,16 @@ public class Game {
             TokenBank.WHITE, TokenBank.BLUE, TokenBank.GREEN, TokenBank.RED, TokenBank.BLACK
     };
 
+    public static void choiceMsg(){
+        System.out.println("\nChoose action:");
+        System.out.println("1) Take 3 different color tokens");
+        System.out.println("2) Take 2 same color tokens");
+        System.out.println("3) Buy a development card");
+        System.out.println("4) Reserve a development card");
+        System.out.println("5) Quit");
+        System.out.print("Your choice: ");
+    }
+
  
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
@@ -95,15 +105,22 @@ public class Game {
                     boolean quit = false;
                     boolean valid = false;
                     while (!valid) {
-                        System.out.println("\nChoose action:");
-                        System.out.println("1) Take 3 different color tokens");
-                        System.out.println("2) Take 2 same color tokens");
-                        System.out.println("3) Buy a development card");
-                        System.out.println("4) Reserve a development card");
-                        System.out.println("5) Quit");
-                        System.out.print("Your choice: ");
+                        choiceMsg();
                         
-                        int choice = sc.nextInt();
+                        int choice = 0;
+                        boolean choiceValid = false;
+                        while(!choiceValid){
+                            try {
+                                choice = sc.nextInt();
+                                choiceValid = true;
+                            } catch (InputMismatchException e){
+                                System.out.println("Input a number!");
+                                sc.nextLine(); // clear the invalid input
+                                choiceMsg();
+
+                            }
+                        }
+                        
                         sc.nextLine();
 
                         switch (choice) {

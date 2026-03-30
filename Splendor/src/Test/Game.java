@@ -25,7 +25,7 @@ public class Game {
             winningCondition = reader.getPrestigePointToWin(); 
             
             // Call the method on the instance
-        } catch ( Exception e){
+        } catch (Exception e){
                 System.out.println("Cant find file man");
         }
 
@@ -72,11 +72,11 @@ public class Game {
                 System.out.println();
                 System.out.println();
                 System.out.println(player.getName().toUpperCase() + "'s turn");
-                turnDisplay(players, player, tb, nobleDeck, nobleFaceUp, developmentFaceUp);
 
                 if (player instanceof Computer computer) {
                     end = computer.turnAlgorithm(tb, developmentFaceUp, developmentDesk, winningCondition, nobleDeck);
                 } else {
+                    turnDisplay(players, player, tb, nobleDeck, nobleFaceUp, developmentFaceUp);
                     boolean quit = false;
                     boolean valid = false;
                     while (!valid) {
@@ -87,31 +87,31 @@ public class Game {
                         System.out.println("4) Reserve a development card");
                         System.out.println("5) Quit");
                         System.out.print("Your choice: ");
-                        int choice = sc.nextInt();
-                        sc.nextLine();
+                        String choice = sc.nextLine();
+                        //sc.nextLine();
 
                         switch (choice) {
                             default:
                                 System.out.println("Invalid choice.");
                                 break;
 
-                            case 1:
+                            case "1":
                                 valid = takeThreeTokens(sc, tb, player);
                                 break;
 
-                            case 2:
+                            case "2":
                                 valid = takeTwoTokens(sc, tb, player);
                                 break;
 
-                            case 3:
+                            case "3":
                                 valid = buyCard(sc, tb, player, developmentFaceUp, developmentDesk);
                                 break;
                         
-                            case 4:
+                            case "4":
                                 valid = reserveCard(sc, tb, player, developmentFaceUp, developmentDesk);
                                 break;
 
-                            case 5:
+                            case "5":
                                 System.out.println("Confirm quit? Y/N: ");
                                 String answer = sc.nextLine().toUpperCase();
                                 if (answer.equals("Y")) {
@@ -194,19 +194,22 @@ public class Game {
 
             System.out.println("Enter 3 DIFFERENT colors (WHITE/BLUE/GREEN/RED/BLACK) separated by spaces:");
             System.out.print("> ");
-            String a = sc.next().toUpperCase();
-            String b = sc.next().toUpperCase();
-            String c = sc.next().toUpperCase();
+            String[] colors = sc.nextLine().split(" ");
+            if (colors.length != 3) {
+                System.out.println("Must choose 3 different colors.");
+                return false;
+            }
+            
+            String a = colors[0].toUpperCase();
+            String b = colors[1].toUpperCase();
+            String c = colors[2].toUpperCase();
 
             HashSet<String> set = new HashSet<>();
             set.add(a);
             set.add(b);
             set.add(c);
 
-            if (set.size() != 3) {
-                System.out.println("Must choose 3 different colors.");
-                return false;
-            }
+
             if (a.equals(TokenBank.GOLD) || b.equals(TokenBank.GOLD) || c.equals(TokenBank.GOLD)) {
                 System.out.println("You cannot take GOLD using this action.");
                 return false;
@@ -327,6 +330,7 @@ public class Game {
 
                 System.out.print("Choose card index: ");
                 index = safeInt(sc);
+                sc.nextLine();
                 
                 chosen = developmentFaceUp.getCard(level, index);
             } catch (Exception e) {

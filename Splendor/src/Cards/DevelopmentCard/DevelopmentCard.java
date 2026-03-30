@@ -8,18 +8,23 @@ import Cards.AbstractCard.AbstractCard;
 
 public class DevelopmentCard extends AbstractCard {
     private String color;     // color of the bonus token
+    private String id;        // id to recognize card
 
     // Constructor to initialise all the information for individual card
-    public DevelopmentCard(String color, int points, int blackCost, int whiteCost, int redCost, int blueCost, int greenCost){
+    public DevelopmentCard(String color, int points, int blackCost, int whiteCost, int redCost, int blueCost, int greenCost, String id){
         
         super(points, blackCost, whiteCost, redCost, blueCost, greenCost);
         this.color = color;
+        this.id = id;
 
     }
 
     public String getBonus(){ 
         return color; 
-    
+    }
+
+    public String getID() {
+        return id;
     }
     
     @Override

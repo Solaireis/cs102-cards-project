@@ -1,2 +1,3 @@
 #!/bin/bash
-java -cp ../../classes Test.Game
+#make sure the directory is splendor
+java -cp classes Test.game

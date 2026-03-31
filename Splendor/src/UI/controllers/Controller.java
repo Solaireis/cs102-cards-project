@@ -5,10 +5,20 @@ import javafx.fxml.FXML;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.control.Button;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import java.net.URL;
+
+import UI.components.BoardView;
+import Cards.DevelopmentCard.DevelopmentCardDeck;
+import Cards.DevelopmentCard.DevelopmentCardFaceUP;
+import Cards.Noble.NobleDeck;
+import Cards.Noble.NobleFaceUP;
 
 public class Controller {
 
@@ -42,6 +52,10 @@ public class Controller {
     @FXML private ImageView redTokenView;
     @FXML private ImageView blueTokenView;
 
+    // Board (4 rows of cards)
+    @FXML private StackPane boardContainer;
+    private BoardView boardView;
+
     private static final double BASE_W = 1400;
     private static final double BASE_H = 900;
 
@@ -64,6 +78,20 @@ public class Controller {
         // Load tokens
         loadTokenImages();
 
+        boardView = new BoardView();
+        boardContainer.getChildren().add(boardView);
+
+        DevelopmentCardDeck deck = new DevelopmentCardDeck();
+        DevelopmentCardFaceUP upDeck = new DevelopmentCardFaceUP(deck);
+
+        NobleDeck nobleDeck = new NobleDeck();
+        NobleFaceUP upNobles = new NobleFaceUP(nobleDeck, 2);
+
+        boardView.loadNobles(upNobles.getFaceUp());
+        
+        boardView.loadTier1(upDeck.getFaceUp(1));
+        boardView.loadTier2(upDeck.getFaceUp(2));
+        boardView.loadTier3(upDeck.getFaceUp(3));
     }
 
     private void loadBackgrounds() {

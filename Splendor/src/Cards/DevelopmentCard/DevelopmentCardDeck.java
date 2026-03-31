@@ -30,41 +30,10 @@ public class DevelopmentCardDeck {
 
     // Call the constructor in the DevelopementCard to initialise all the 90 cards
     private void initialiseCards() {
-        // level1Deck.add(new DevelopmentCard(TokenBank.BLACK, 1, 0, 1, 1, 1, 1));
-        // level1Deck.add(new DevelopmentCard(TokenBank.RED, 1, 0, 0, 1, 1, 1));
-        // level1Deck.add(new DevelopmentCard(TokenBank.WHITE, 1, 1, 0, 1, 0, 1));
-        // level1Deck.add(new DevelopmentCard(TokenBank.BLUE, 1, 0, 1, 1, 1, 1));
-        // level1Deck.add(new DevelopmentCard(TokenBank.GREEN, 1, 0, 1, 1, 1, 1));
-        // level1Deck.add(new DevelopmentCard(TokenBank.BLUE, 1, 0, 1, 1, 1, 1));
-        // level1Deck.add(new DevelopmentCard(TokenBank.RED, 1, 0, 1, 1, 1, 1));
-        // level1Deck.add(new DevelopmentCard(TokenBank.GREEN, 1, 0, 1, 1, 1, 1));
-        // level1Deck.add(new DevelopmentCard(TokenBank.WHITE, 1, 0, 1, 1, 1, 1));
-        // level1Deck.add(new DevelopmentCard(TokenBank.BLUE, 1, 3, 1, 1, 1, 1));
-        // level2Deck.add(new DevelopmentCard(TokenBank.GREEN, 2, 0, 2, 0, 4, 0));
-        // level2Deck.add(new DevelopmentCard(TokenBank.GREEN, 3, 0, 0, 0, 4, 0));
-        // level2Deck.add(new DevelopmentCard(TokenBank.BLUE, 2, 0, 5, 0, 4, 0));
-        // level2Deck.add(new DevelopmentCard(TokenBank.BLACK, 2, 2, 0, 0, 4, 0));
-        // level2Deck.add(new DevelopmentCard(TokenBank.WHITE, 2, 0, 0, 3, 4, 0));
-        // level2Deck.add(new DevelopmentCard(TokenBank.WHITE, 2, 0, 3, 0, 3, 1));
-        // level2Deck.add(new DevelopmentCard(TokenBank.BLUE, 2, 0, 1, 0, 4, 0));
-        // level2Deck.add(new DevelopmentCard(TokenBank.WHITE, 2, 6, 0, 0, 0, 0));
-        // level2Deck.add(new DevelopmentCard(TokenBank.BLUE, 3, 3, 0, 3, 0, 3));
-        // level3Deck.add(new DevelopmentCard(TokenBank.BLACK, 3, 2, 0, 0, 1, 0));
-        // level3Deck.add(new DevelopmentCard(TokenBank.BLUE, 4, 6, 0, 0, 0, 0));
-        // level3Deck.add(new DevelopmentCard(TokenBank.GREEN, 3, 6, 0, 0, 0, 0));
-        // level3Deck.add(new DevelopmentCard(TokenBank.RED, 4, 2, 0, 0, 4, 0));
-        // level3Deck.add(new DevelopmentCard(TokenBank.GREEN, 3, 6, 0, 0, 0, 0));
-        // level3Deck.add(new DevelopmentCard(TokenBank.RED, 3, 6, 0, 0, 0, 0));
-        // level3Deck.add(new DevelopmentCard(TokenBank.BLUE, 3, 2, 0, 3, 0, 0));
-        // level3Deck.add(new DevelopmentCard(TokenBank.WHITE, 4, 3, 1, 1, 0, 0));
-        // level3Deck.add(new DevelopmentCard(TokenBank.BLACK, 3, 3, 1, 2, 1, 1));
-        // level3Deck.add(new DevelopmentCard(TokenBank.RED, 3, 2, 4, 0, 1, 3));
-        // //....... 90 lines of code here to store all the cards if decide to hardcode LOL.......
+        initializeDeck("src/Data/tier1.csv", level1Deck);
+        initializeDeck("src/Data/tier2.csv", level2Deck);
+        initializeDeck("src/Data/tier3.csv", level3Deck);
 
-        // Would do src/Data/tier1.csv but compile.sh and run.sh is in Spelndor/src/Test (bad bad)
-        initializeDeck("../Data/tier1.csv", level1Deck);
-        initializeDeck("../Data/tier2.csv", level2Deck);
-        initializeDeck("../Data/tier3.csv", level3Deck);
     }
 
     // Helper method to initialize the deck

@@ -6,6 +6,7 @@
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.StackPane?>
 
 <AnchorPane fx:id="root"
             prefHeight="900.0" prefWidth="1400.0"
@@ -41,6 +42,13 @@
         <!-- Cloud layer 5 -->
         <ImageView fx:id="gameCloud5A" fitWidth="1400.0" fitHeight="900.0" preserveRatio="false" />
         <ImageView fx:id="gameCloud5B" fitWidth="1400.0" fitHeight="900.0" preserveRatio="false" />
+
+        <!-- Board View (1 noble row, 3 card rows)-->
+        <StackPane fx:id="boardContainer"
+           AnchorPane.topAnchor="80.0"
+           AnchorPane.bottomAnchor="80.0"
+           AnchorPane.leftAnchor="80.0"
+           AnchorPane.rightAnchor="170.0" />
 
         <!-- Token Box on the right side-->
         <VBox fx:id="tokenBox"

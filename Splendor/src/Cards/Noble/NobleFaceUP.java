@@ -26,6 +26,10 @@ public class NobleFaceUP {
         }
     }
 
+    public ArrayList<Noble> getFaceUp() {
+        return faceUp;
+    }
+
     public Noble getCard(int index) {
         return faceUp.get(index);
     }

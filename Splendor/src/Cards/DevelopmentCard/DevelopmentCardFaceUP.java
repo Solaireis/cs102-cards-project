@@ -25,7 +25,7 @@ public class DevelopmentCardFaceUP {
 
     // Helper function to get the group of face up card with the level we want
     // Is like we have 3 rows of card on the table and this is use to point which row we want
-    private ArrayList<DevelopmentCard> getFaceUp(int level) {
+    public ArrayList<DevelopmentCard> getFaceUp(int level) {
         if (level == 1){
             return faceUp1;
         }

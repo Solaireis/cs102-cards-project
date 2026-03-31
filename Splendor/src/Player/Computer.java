@@ -66,7 +66,7 @@ public class Computer extends Player {
     //-----------------------------------------------------------------------------------------------------------------
 
     /**
-     * Test.Game.buyCard(), but adjusted for the Computer class.
+     * Test.Game::buyCard, but adjusted for the Computer class.
      * Iterates through each card in its reserve then in the market to find one it can afford.
      * @param tb the token bank
      * @param developmentFaceUp development cards currently face up on the table
@@ -108,7 +108,7 @@ public class Computer extends Player {
     }
 
     /**
-     * Test.Game.takeThreeTokens(), but adjusted for the Computer class.
+     * Test.Game::takeThreeTokens, but adjusted for the Computer class.
      * Takes three random tokens.
      * @param tb the token bank
      * @return a Boolean value indicating whether Computer has successfully taken three tokens or not
@@ -145,7 +145,7 @@ public class Computer extends Player {
     }
 
     /**
-     * Test.Game.takeTwoTokens(), but adjusted for the Computer class.
+     * Test.Game::takeTwoTokens, but adjusted for the Computer class.
      * Takes two tokens of a random color.
      * @param tb the token bank
      * @return a Boolean value indicating whether Computer has successfully taken two tokens or not
@@ -175,7 +175,7 @@ public class Computer extends Player {
     }
 
     /**
-     * Test.Game.reserveCard(), but adjusted for the Computer class.
+     * Test.Game::reserveCard, but adjusted for the Computer class.
      * Tries to reserve the card in market level 1 index 0, then market level 2 index 0, then market level 3 index 0.
      * @param tb the token bank
      * @param developmentFaceUp development cards currently face up on the table
@@ -218,7 +218,7 @@ public class Computer extends Player {
     //-----------------------------------------------------------------------------------------------------------------
 
     /**
-     * Test.Game.endTurn(), but adjusted for the Computer class.
+     * Test.Game::endTurn, but adjusted for the Computer class.
      * @param tb the token bank
      * @param winningCondition amount of points needed to win
      * @return a Boolean value indicating whether Computer has reached the winning condition or not
@@ -245,7 +245,7 @@ public class Computer extends Player {
     }
 
     /**
-     * Test.Game.awardNobleIfAny(), but adjusted for the Computer class.
+     * Test.Game::awardNobleIfAny, but adjusted for the Computer class.
      * @param deck nobles currently on the table
      */
     private void computerAwardNobleIfAny(NobleDeck deck) {

@@ -1,11 +1,12 @@
 package UI.components;
 
 import java.util.List;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 import Cards.DevelopmentCard.DevelopmentCard;
 import Cards.Noble.Noble;
 import javafx.geometry.Pos;
-import javafx.scene.image.Image;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
@@ -15,6 +16,12 @@ public class BoardView extends VBox {
     private final HBox tier3Row = new HBox(15);
     private final HBox tier2Row = new HBox(15);
     private final HBox tier1Row = new HBox(15);
+
+    private BiConsumer<Integer, Integer> onFaceUpCardClick;
+    private Consumer<Integer> onTopDeckClick;
+    private Consumer<Integer> onNobleClick;
+
+    private CardView selectedCard;
 
     public BoardView() {
         setSpacing(25);
@@ -28,81 +35,95 @@ public class BoardView extends VBox {
         getChildren().addAll(nobleRow, tier3Row, tier2Row, tier1Row);
     }
 
-    public HBox getNobleRow() {
-        return nobleRow;
+    public void setOnFaceUpCardClick(BiConsumer<Integer, Integer> onFaceUpCardClick) {
+        this.onFaceUpCardClick = onFaceUpCardClick;
     }
 
-    public HBox getTier3Row() {
-        return tier3Row;
+    public void setOnTopDeckClick(Consumer<Integer> onTopDeckClick) {
+        this.onTopDeckClick = onTopDeckClick;
     }
 
-    public HBox getTier2Row() {
-        return tier2Row;
+    public void setOnNobleClick(Consumer<Integer> onNobleClick) {
+        this.onNobleClick = onNobleClick;
     }
 
-    public HBox getTier1Row() {
-        return tier1Row;
+    private void selectCard(CardView cardView) {
+        if (selectedCard != null) {
+            selectedCard.setSelected(false);
+        }
+        selectedCard = cardView;
+        selectedCard.setSelected(true);
+    }
+
+    public void clearSelection() {
+        if (selectedCard != null) {
+            selectedCard.setSelected(false);
+            selectedCard = null;
+        }
     }
 
     public void loadNobles(List<Noble> nobles) {
         nobleRow.getChildren().clear();
 
-        for (Noble noble : nobles) {
+        for (int i = 0; i < nobles.size(); i++) {
+            Noble noble = nobles.get(i);
             String cardId = noble.getID();
             String imagePath = "/UI/images/cards/nobleCards/" + cardId + ".png";
-            nobleRow.getChildren().add(new CardView(cardId, imagePath, 120, 120));
+
+            CardView cardView = new CardView(cardId, imagePath, 120, 120);
+            final int nobleIndex = i;
+
+            cardView.setOnMouseClicked(e -> {
+                selectCard(cardView);
+                if (onNobleClick != null) {
+                    onNobleClick.accept(nobleIndex);
+                }
+            });
+
+            nobleRow.getChildren().add(cardView);
         }
     }
 
     public void loadTier1(List<DevelopmentCard> cards) {
-        tier1Row.getChildren().clear();
-
-        // First card is back of tierX
-        tier1Row.getChildren().add(
-            new CardView("tier1_deck", "/UI/images/cards/devCards/tier1/tier1Back.png", 140, 196)
-        );
-
-        // Then subsequent cards
-        for (DevelopmentCard card : cards) {
-            String cardId = card.getID();
-            String imagePath = "/UI/images/cards/devCards/tier1/" + cardId + ".png";
-
-            tier1Row.getChildren().add(new CardView(cardId, imagePath, 140, 196));
-        }
+        loadTierRow(tier1Row, cards, 1, "/UI/images/cards/devCards/tier1/", "/UI/images/cards/devCards/tier1/tier1Back.png");
     }
 
     public void loadTier2(List<DevelopmentCard> cards) {
-        tier2Row.getChildren().clear();
-
-        tier2Row.getChildren().add(
-            new CardView("tier2_deck", "/UI/images/cards/devCards/tier2/tier2Back.png", 140, 196)
-        );
-
-        for (DevelopmentCard card : cards) {
-            String cardId = card.getID();
-            String imagePath = "/UI/images/cards/devCards/tier2/" + cardId + ".png";
-
-            tier2Row.getChildren().add(new CardView(cardId, imagePath, 140, 196));
-        }
+        loadTierRow(tier2Row, cards, 2, "/UI/images/cards/devCards/tier2/", "/UI/images/cards/devCards/tier2/tier2Back.png");
     }
 
     public void loadTier3(List<DevelopmentCard> cards) {
-        tier3Row.getChildren().clear();
-
-        tier3Row.getChildren().add(
-            new CardView("tier3_deck", "/UI/images/cards/devCards/tier3/tier3Back.png", 140, 196)
-        );
-
-        for (DevelopmentCard card : cards) {
-            String cardId = card.getID();
-            String imagePath = "/UI/images/cards/devCards/tier3/" + cardId + ".png";
-
-            tier3Row.getChildren().add(new CardView(cardId, imagePath, 140, 196));
-        }
+        loadTierRow(tier3Row, cards, 3, "/UI/images/cards/devCards/tier3/", "/UI/images/cards/devCards/tier3/tier3Back.png");
     }
 
+    private void loadTierRow(HBox row, List<DevelopmentCard> cards, int tier, String folder, String backPath) {
+        row.getChildren().clear();
 
+        CardView deckBack = new CardView("tier" + tier + "_deck", backPath, 140, 196);
+        deckBack.setOnMouseClicked(e -> {
+            selectCard(deckBack);
+            if (onTopDeckClick != null) {
+                onTopDeckClick.accept(tier);
+            }
+        });
+        row.getChildren().add(deckBack);
 
+        for (int i = 0; i < cards.size(); i++) {
+            DevelopmentCard card = cards.get(i);
+            String cardId = card.getID();
+            String imagePath = folder + cardId + ".png";
 
+            CardView cardView = new CardView(cardId, imagePath, 140, 196);
+            final int cardIndex = i;
 
+            cardView.setOnMouseClicked(e -> {
+                selectCard(cardView);
+                if (onFaceUpCardClick != null) {
+                    onFaceUpCardClick.accept(tier, cardIndex);
+                }
+            });
+
+            row.getChildren().add(cardView);
+        }
+    }
 }

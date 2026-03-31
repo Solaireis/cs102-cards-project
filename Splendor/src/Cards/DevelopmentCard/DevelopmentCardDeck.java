@@ -32,90 +32,66 @@ public class DevelopmentCardDeck {
 
     // Call the constructor in the DevelopementCard to initialise all the 90 cards
     private void initialiseCards() {
-        int numOfCards = 0;
-        String tier1DeckDir = null;
-        String tier2DeckDir = null;
-        String tier3DeckDir = null;
+        initializeDeck("src/Data/tier1.csv", level1Deck);
+        initializeDeck("src/Data/tier2.csv", level2Deck);
+        initializeDeck("src/Data/tier3.csv", level3Deck);
+
+    //     int numOfCards = 0;
+    //     String tier1DeckDir = null;
+    //     String tier2DeckDir = null;
+    //     String tier3DeckDir = null;
 
 
-        try{
-            Reader reader = new Reader(); // Create an instance of Reader
-            numOfCards = reader.getNumOfCards();
-            tier1DeckDir = reader.getTierDeck(1);
-            tier2DeckDir = reader.getTierDeck(2);
-            tier3DeckDir = reader.getTierDeck(3);
-            System.out.println("Num of Cards properties  found!");
-            System.out.printf("Number of Cards Shuffled: %d \n", numOfCards);
-            // Call the method on the instance
-        } catch ( Exception e){
-                System.out.println("Cant find file");
-        }
+    //     try{
+    //         Reader reader = new Reader(); // Create an instance of Reader
+    //         numOfCards = reader.getNumOfCards();
+    //         tier1DeckDir = reader.getTierDeck(1);
+    //         tier2DeckDir = reader.getTierDeck(2);
+    //         tier3DeckDir = reader.getTierDeck(3);
+    //         System.out.println("Num of Cards properties  found!");
+    //         System.out.printf("Number of Cards Shuffled: %d \n", numOfCards);
+    //         // Call the method on the instance
+    //     } catch ( Exception e){
+    //             System.out.println("Cant find file");
+    //     }
 
-        //edge cases if properties is above 90
-        if (numOfCards < 60){
-            System.out.println("Num of Cards less than 60.. Setting to default 60");
-            numOfCards = 60;
-        }
-        //edge cases if properties is above 90
-        if (numOfCards > 90){
-            System.out.println("Num of Cards more than 90.. Setting to maximum 90");
-            numOfCards = 90; 
-        }
-       // run the cards development
-        if (numOfCards == 60){
-            initializeDeck(tier1DeckDir, level1Deck, 30);
-            initializeDeck(tier2DeckDir, level2Deck, 20);
-            initializeDeck(tier3DeckDir, level3Deck, 10);
-        } else if ( numOfCards > 80){
-            initializeDeck(tier1DeckDir, level1Deck, 40); 
-            initializeDeck(tier2DeckDir, level2Deck, 30);
-            initializeDeck(tier3DeckDir, level3Deck, numOfCards - 70);
-        } else if ( numOfCards > 70){
-            initializeDeck(tier1DeckDir, level1Deck, 40); 
-            initializeDeck(tier2DeckDir, level2Deck, numOfCards - 50);
-            initializeDeck(tier3DeckDir, level3Deck, 10); 
-        } else{ //likely the number of cards here would be between 60 - 70
-            initializeDeck(tier1DeckDir, level1Deck, numOfCards - 30); 
-            initializeDeck(tier2DeckDir, level2Deck, 20); 
-            initializeDeck(tier3DeckDir, level2Deck, 10); 
-        }
+    //     //edge cases if properties is above 90
+    //     if (numOfCards < 60){
+    //         System.out.println("Num of Cards less than 60.. Setting to default 60");
+    //         numOfCards = 60;
+    //     }
+    //     //edge cases if properties is above 90
+    //     if (numOfCards > 90){
+    //         System.out.println("Num of Cards more than 90.. Setting to maximum 90");
+    //         numOfCards = 90; 
+    //     }
+    //    // run the cards development
+    //     if (numOfCards == 60){
+    //         initializeDeck(tier1DeckDir, level1Deck, 30);
+    //         initializeDeck(tier2DeckDir, level2Deck, 20);
+    //         initializeDeck(tier3DeckDir, level3Deck, 10);
+    //     } else if ( numOfCards > 80){
+    //         initializeDeck(tier1DeckDir, level1Deck, 40); 
+    //         initializeDeck(tier2DeckDir, level2Deck, 30);
+    //         initializeDeck(tier3DeckDir, level3Deck, numOfCards - 70);
+    //     } else if ( numOfCards > 70){
+    //         initializeDeck(tier1DeckDir, level1Deck, 40); 
+    //         initializeDeck(tier2DeckDir, level2Deck, numOfCards - 50);
+    //         initializeDeck(tier3DeckDir, level3Deck, 10); 
+    //     } else{ //likely the number of cards here would be between 60 - 70
+    //         initializeDeck(tier1DeckDir, level1Deck, numOfCards - 30); 
+    //         initializeDeck(tier2DeckDir, level2Deck, 20); 
+    //         initializeDeck(tier3DeckDir, level2Deck, 10); 
+    //     }
     }
 
     // Helper method to initialize the deck
-    // public static void initializeDeck(String fileName, List<DevelopmentCard> deck) {
-    //     try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
-    //         String line;
-    //         br.readLine(); // skip header
-
-    //         while ((line = br.readLine()) != null) {
-    //             String[] values = line.split(",");
-
-    //             String color = values[0];
-    //             int points = Integer.parseInt(values[1]);
-    //             int blackCost = Integer.parseInt(values[2]);
-    //             int whiteCost = Integer.parseInt(values[3]);
-    //             int redCost = Integer.parseInt(values[4]);
-    //             int blueCost = Integer.parseInt(values[5]);
-    //             int greenCost = Integer.parseInt(values[6]);
-    //             String id = values[7];                              // needed for later updating UI
-
-    //             DevelopmentCard card = new DevelopmentCard(color, points, blackCost, whiteCost, redCost, blueCost, greenCost, id);
-    //             deck.add(card);
-    //         }
-
-    //     } catch (IOException e) {
-    //         e.printStackTrace();
-    //     }
-    // }
-
-    //Current helper method
-    public static void initializeDeck(String fileName, List<DevelopmentCard> deck, int NumOfCards) {
+    public static void initializeDeck(String fileName, List<DevelopmentCard> deck) {
         try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
-            int count = 0;
             String line;
             br.readLine(); // skip header
 
-            while ((line = br.readLine()) != null && count < NumOfCards) {
+            while ((line = br.readLine()) != null) {
                 String[] values = line.split(",");
 
                 String color = values[0];
@@ -129,15 +105,43 @@ public class DevelopmentCardDeck {
 
                 DevelopmentCard card = new DevelopmentCard(color, points, blackCost, whiteCost, redCost, blueCost, greenCost, id);
                 deck.add(card);
-                count++;
-                //test code to verify that indeed only the set number of cards can be initialised
-               // System.out.println(count);
             }
 
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
+
+    //Current helper method
+    // public static void initializeDeck(String fileName, List<DevelopmentCard> deck, int NumOfCards) {
+    //     try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
+    //         int count = 0;
+    //         String line;
+    //         br.readLine(); // skip header
+
+    //         while ((line = br.readLine()) != null && count < NumOfCards) {
+    //             String[] values = line.split(",");
+
+    //             String color = values[0];
+    //             int points = Integer.parseInt(values[1]);
+    //             int blackCost = Integer.parseInt(values[2]);
+    //             int whiteCost = Integer.parseInt(values[3]);
+    //             int redCost = Integer.parseInt(values[4]);
+    //             int blueCost = Integer.parseInt(values[5]);
+    //             int greenCost = Integer.parseInt(values[6]);
+    //             String id = values[7];                              // needed for later updating UI
+
+    //             DevelopmentCard card = new DevelopmentCard(color, points, blackCost, whiteCost, redCost, blueCost, greenCost, id);
+    //             deck.add(card);
+    //             count++;
+    //             //test code to verify that indeed only the set number of cards can be initialised
+    //            // System.out.println(count);
+    //         }
+
+    //     } catch (IOException e) {
+    //         e.printStackTrace();
+    //     }
+    // }
     
 
     // Method in the collection to automatically shuffle the order of the cards for every level.

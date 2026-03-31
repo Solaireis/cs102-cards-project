@@ -39,12 +39,12 @@ public class TokenBank{
              // Create an instance of Reader
             customTokenMode = reader.getCustomTokenMode();
             if (customTokenMode == 1){
-                white = reader.getColourToken("white");
-                blue = reader.getColourToken("blue");
-                green = reader.getColourToken("green");
-                red = reader.getColourToken("red");
-                black = reader.getColourToken("black");
-                gold = reader.getColourToken("gold");
+                white = reader.getColourToken("WHITE");
+                blue = reader.getColourToken("BLUE");
+                green = reader.getColourToken("GREEN");
+                red = reader.getColourToken("RED");
+                black = reader.getColourToken("BLACK");
+                gold = reader.getColourToken("GOLD");
             }
             System.out.println("Num of Cards properties  found!");
             // Call the method on the instance

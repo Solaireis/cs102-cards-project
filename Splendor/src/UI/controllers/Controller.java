@@ -11,17 +11,18 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 
-import java.util.ArrayList;
-import java.util.List;
+// import java.util.ArrayList;
+// import java.util.List;
 
 import java.net.URL;
 
 import UI.components.BoardView;
-import Cards.DevelopmentCard.DevelopmentCardDeck;
-import Cards.DevelopmentCard.DevelopmentCardFaceUP;
-import Cards.Noble.NobleDeck;
-import Cards.Noble.NobleFaceUP;
-import Cards.Token.TokenBank;
+// import Cards.DevelopmentCard.DevelopmentCardDeck;
+// import Cards.DevelopmentCard.DevelopmentCardFaceUP;
+// import Cards.Noble.NobleDeck;
+// import Cards.Noble.NobleFaceUP;
+// import Cards.Token.TokenBank;
+import Player.Player;
 import Test.GameLogic;
 import Test.MoveResult;
 
@@ -73,10 +74,10 @@ public class Controller {
     @FXML private Label boughtCountLabel;
     @FXML private VBox currentPlayerTokensBox;
 
-    //temporary
-    private int currentPlayerNumber = 1;
-    private int turnNumber = 1;
-    private int totalPlayers = 2; // change later if needed
+    // //temporary
+    // private int currentPlayerNumber = 1;
+    // private int turnNumber = 1;
+    // private int totalPlayers = 2; // change later if needed
 
     // Board (4 rows of cards)
     @FXML private StackPane boardContainer;
@@ -89,6 +90,10 @@ public class Controller {
     // Back end!
     private BoardView boardView;
     private GameLogic gameLogic;
+    private enum ActionMode {
+        NONE, TAKE_TOKENS, BUY_CARD, RESERVE_CARD
+    }
+    private ActionMode currentMode = ActionMode.NONE;
 
     private static final double BASE_W = 1400;
     private static final double BASE_H = 900;
@@ -115,87 +120,144 @@ public class Controller {
         boardView = new BoardView();
         boardContainer.getChildren().add(boardView);
 
-        DevelopmentCardDeck deck = new DevelopmentCardDeck();
-        DevelopmentCardFaceUP upDeck = new DevelopmentCardFaceUP(deck);
+        boardView.setOnFaceUpCardClick((tier, index) -> handleFaceUpCardClick(tier, index));
+        boardView.setOnTopDeckClick(tier -> handleTopDeckClick(tier));
+        boardView.setOnNobleClick(index -> handleNobleClick(index));
 
-        NobleDeck nobleDeck = new NobleDeck();
-        NobleFaceUP upNobles = new NobleFaceUP(nobleDeck, 2);
-
-        boardView.loadNobles(upNobles.getFaceUp());
-        boardView.loadTier1(upDeck.getFaceUp(1));
-        boardView.loadTier2(upDeck.getFaceUp(2));
-        boardView.loadTier3(upDeck.getFaceUp(3));
-
-        refreshLeftPanel();
     }
 
-    private void refreshLeftPanel() {
-        currentPlayerLabel.setText("Player " + currentPlayerNumber);
-        turnLabel.setText("Turn " + turnNumber);
-        actionStatusLabel.setText("Choose an action");
+    private void handleFaceUpCardClick(int tier, int index) {
+        if (gameLogic == null) {
+            return;
+        }
+    
+        MoveResult result;
+    
+        switch (currentMode) {
+            case BUY_CARD:
+                result = gameLogic.buyMarketCard(tier, index);
+                break;
+            case RESERVE_CARD:
+                result = gameLogic.reserveFaceUpCard(tier, index);
+                break;
+            default:
+                actionStatusLabel.setText("Choose Buy Card or Reserve Card first.");
+                return;
+        }
+    
+        updateStatus(result);
+        actionStatusLabel.setText(result.getMessage());
+        refreshFromGameLogic();
+    }
+    
+    private void handleTopDeckClick(int tier) {
+        if (gameLogic == null) {
+            return;
+        }
+    
+        if (currentMode != ActionMode.RESERVE_CARD) {
+            actionStatusLabel.setText("Choose Reserve Card first.");
+            return;
+        }
+    
+        MoveResult result = gameLogic.reserveTopDeckCard(tier);
+        updateStatus(result);
+        actionStatusLabel.setText(result.getMessage());
+        refreshFromGameLogic();
+    }
+    
+    private void handleNobleClick(int index) {
+        if (gameLogic == null) {
+            return;
+        }
+    
+        if (!gameLogic.isWaitingForNobleChoice()) {
+            actionStatusLabel.setText("No noble choice is pending.");
+            return;
+        }
+    
+        MoveResult result = gameLogic.chooseNoble(index);
+        updateStatus(result);
+        actionStatusLabel.setText(result.getMessage());
+        refreshFromGameLogic();
+    }
 
-        // temporary fake values for now
-        pointsLabel.setText("Points: 0");
-        reservedCountLabel.setText("Reserved: 0");
-        boughtCountLabel.setText("Bought: 0");
 
-        updateCurrentPlayerTokensBox();
-    }   
+    private void refreshBoardFromGameLogic() {
+        if (gameLogic == null) {
+            return;
+        }
+
+        boardView.loadNobles(gameLogic.getNobleFaceUp().getFaceUp());
+        boardView.loadTier1(gameLogic.getDevelopmentFaceUp().getFaceUp(1));
+        boardView.loadTier2(gameLogic.getDevelopmentFaceUp().getFaceUp(2));
+        boardView.loadTier3(gameLogic.getDevelopmentFaceUp().getFaceUp(3));
+        boardView.clearSelection();
+    }
 
 
     public void setGameLogic(GameLogic gameLogic) {
         this.gameLogic = gameLogic;
-        refreshUI();
+        refreshFromGameLogic();
     }
 
     @FXML
     private void handleTakeTokens() {
-        actionStatusLabel.setText("Take Tokens selected.");
+        currentMode = ActionMode.TAKE_TOKENS;
+        updateStatus(MoveResult.success("Select tokens of the right"));
+        //statusBarLabel.setText("Select tokens on the right");
     }
 
     @FXML
     private void handleBuyCard() {
-        actionStatusLabel.setText("Buy Card selected.");
+        currentMode = ActionMode.BUY_CARD;
+        statusBarLabel.setText("Click a face-up or reserved card to buy it");
     }
 
     @FXML
     private void handleReserveCard() {
-        actionStatusLabel.setText("Reserve Card selected.");
+        currentMode = ActionMode.RESERVE_CARD;
+        statusBarLabel.setText("Click a face-up card to reserve it");
     }
 
     @FXML
     private void handleEndTurn() {
-        currentPlayerNumber++;
-
-        if (currentPlayerNumber > totalPlayers) {
-            currentPlayerNumber = 1;
-            turnNumber++;
+        if (gameLogic == null) {
+            return;
         }
 
-        refreshLeftPanel();
+        MoveResult result = gameLogic.endTurn();
+        updateStatus(result);
+        actionStatusLabel.setText(result.getMessage());
+        refreshFromGameLogic();
     }    
 
-    private void refreshUI() {
-        // update labels, token counts, visible cards, reserves, current player, etc.
+    private void refreshFromGameLogic() {
+        if (gameLogic == null) {
+            return;
+        }
+
+        Player currentPlayer = gameLogic.getCurrentPlayer();
+
+        currentPlayerLabel.setText(currentPlayer.getName());
+        turnLabel.setText("Turn: " + gameLogic.getTurnNumber());
+        pointsLabel.setText("Points: " + currentPlayer.getPoints());
+        reservedCountLabel.setText("Reserved: " + currentPlayer.totalReserves());
+        boughtCountLabel.setText("Bought: " + currentPlayer.totalDevelopmentCards());
+
+        updateCurrentPlayerTokensBox(currentPlayer);
+        refreshBoardFromGameLogic();
     }
     
-    private void updateCurrentPlayerTokensBox() {
+    private void updateCurrentPlayerTokensBox(Player player) {
         currentPlayerTokensBox.getChildren().clear();
 
-        Label white = new Label("White: 2");
-        Label blue = new Label("Blue: 1");
-        Label green = new Label("Green: 0");
-        Label red = new Label("Red: 3");
-        Label black = new Label("Black: 1");
-        Label gold = new Label("Gold: 1");
-
-        // when have functioning player, then use this
-        // Label white = new Label("White: " + player.getTokens("WHITE"));
-        // Label blue = new Label("Blue: " + player.getTokens("BLUE"));
-        // Label green = new Label("Green: " + player.getTokens("GREEN"));
-        // Label red = new Label("Red: " + player.getTokens("RED"));
-        // Label black = new Label("Black: " + player.getTokens("BLACK"));
-        // Label gold = new Label("Gold: " + player.getTokens("GOLD"));
+        Label white = new Label("White: " + player.getTokens("WHITE"));
+        Label blue = new Label("Blue: " + player.getTokens("BLUE"));
+        Label green = new Label("Green: " + player.getTokens("GREEN"));
+        Label red = new Label("Red: " + player.getTokens("RED"));
+        Label black = new Label("Black: " + player.getTokens("BLACK"));
+        Label gold = new Label("Gold: " + player.getTokens("GOLD"));
 
         white.setStyle("-fx-text-fill: white;");
         blue.setStyle("-fx-text-fill: white;");
@@ -211,38 +273,28 @@ public class Controller {
 
 
 /* ----------Label Helper Methods------------------------------------ */
-    private void showSuccess(String message) {
-        statusBarLabel.setText(message);
-        statusIcon.setText("✓");
 
-        statusBar.setStyle(
-            "-fx-background-color: rgba(75,85,99,0.92);" +
-            "-fx-background-radius: 14 14 0 0;" +
-            "-fx-padding: 0 18 0 18;" +
-            "-fx-border-color: rgba(255,255,255,0.12);" +
-            "-fx-border-width: 1 0 0 0;"
-        );
-
-        statusIcon.setStyle(
-            "-fx-background-color: rgba(255,255,255,0.22);" +
-            "-fx-background-radius: 999;" +
-            "-fx-text-fill: white;" +
-            "-fx-font-size: 15px;" +
-            "-fx-font-weight: bold;"
-        );
-    }
-
-    private void showError(String message) {
-        statusBarLabel.setText(message);
-        statusIcon.setText("✕");
-
-        statusBar.setStyle(
-            "-fx-background-color: rgba(199, 72, 72, 0.92);" +
-            "-fx-background-radius: 14 14 0 0;" +
-            "-fx-padding: 0 18 0 18;" +
-            "-fx-border-color: rgba(255,255,255,0.12);" +
-            "-fx-border-width: 1 0 0 0;"
-        );
+    private void updateStatus(MoveResult result) {
+        statusBarLabel.setText(result.getMessage());
+        if (result.isSuccess()) {
+            statusIcon.setText("✓");
+            statusBar.setStyle(
+                "-fx-background-color: rgba(75,85,99,0.92);" +
+                "-fx-background-radius: 14 14 0 0;" +
+                "-fx-padding: 0 18 0 18;" +
+                "-fx-border-color: rgba(255,255,255,0.12);" +
+                "-fx-border-width: 1 0 0 0;"
+            );
+        } else {
+            statusIcon.setText("✕");
+            statusBar.setStyle(
+                "-fx-background-color: rgba(199, 72, 72, 0.92);" +
+                "-fx-background-radius: 14 14 0 0;" +
+                "-fx-padding: 0 18 0 18;" +
+                "-fx-border-color: rgba(255,255,255,0.12);" +
+                "-fx-border-width: 1 0 0 0;"
+            );            
+        }
 
         statusIcon.setStyle(
             "-fx-background-color: rgba(255,255,255,0.22);" +

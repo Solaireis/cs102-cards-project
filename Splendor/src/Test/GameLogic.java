@@ -29,6 +29,7 @@ public class GameLogic {
     private boolean waitingForNobleChoice = false;
 
     private int currentPlayerIndex = 0;
+    private int turnNumber = 1;
     private boolean gameOver = false;
     private boolean lastRoundTriggered = false;
 
@@ -57,6 +58,10 @@ public class GameLogic {
 
     public Player getCurrentPlayer() {
         return players.get(currentPlayerIndex);
+    }
+
+    public int getTurnNumber() {
+        return turnNumber;
     }
 
     public ArrayList<Player> getPlayers() {
@@ -277,7 +282,7 @@ public class GameLogic {
 
 
     public MoveResult endTurn() {
-        // Guard against being called when player hasn't ppicked yet
+        // Guard against being called when player hasn't picked yet
         if (waitingForNobleChoice) {
             return MoveResult.fail("Player must choose a noble first.");
         }
@@ -381,6 +386,12 @@ public class GameLogic {
             lastRoundTriggered = true;
             gameOver = true;
             return MoveResult.success("Player reached winning condition.");
+        }
+
+
+        // increment turn number once 1 cycle of all the players are done
+        if (currentPlayerIndex == players.size() - 1) {
+            turnNumber++;
         }
 
         currentPlayerIndex = (currentPlayerIndex + 1) % players.size();

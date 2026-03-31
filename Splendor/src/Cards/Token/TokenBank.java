@@ -5,6 +5,7 @@ So whenever we want to edit the number of token we need to call the methods in t
 package Cards.Token;
 
 import java.util.HashMap;
+import Properties.*;
 
 public class TokenBank{
 
@@ -25,30 +26,65 @@ public class TokenBank{
         tokens = new HashMap<>();
 
         // One colour is mapping to a specific token object.
-
-        switch(numOfPlayers) {
-            case 2:
-                tokens.put(WHITE, new Token(WHITE, 4));
-                tokens.put(BLUE, new Token(BLUE, 4));
-                tokens.put(GREEN, new Token(GREEN, 4));
-                tokens.put(RED, new Token(RED, 4));
-                tokens.put(BLACK, new Token(BLACK, 4));
-                tokens.put(GOLD, new Token(GOLD, 5));
-            case 3:
-                tokens.put(WHITE, new Token(WHITE, 5));
-                tokens.put(BLUE, new Token(BLUE, 5));
-                tokens.put(GREEN, new Token(GREEN, 5));
-                tokens.put(RED, new Token(RED, 5));
-                tokens.put(BLACK, new Token(BLACK, 5));
-                tokens.put(GOLD, new Token(GOLD, 5));
-            default:
-                tokens.put(WHITE, new Token(WHITE, 7));
-                tokens.put(BLUE, new Token(BLUE, 7));
-                tokens.put(GREEN, new Token(GREEN, 7));
-                tokens.put(RED, new Token(RED, 7));
-                tokens.put(BLACK, new Token(BLACK, 7));
-                tokens.put(GOLD, new Token(GOLD, 5));
-        } 
+        int white = 0;
+        int blue = 0;
+        int green = 0;
+        int red = 0;
+        int black = 0;
+        int gold = 0;
+        int customTokenMode = 0;
+        //takes a predetermine number of tokens from the properties file
+        try{
+            Reader reader = new Reader();
+             // Create an instance of Reader
+            customTokenMode = reader.getCustomTokenMode();
+            if (customTokenMode == 1){
+                white = reader.getColourToken("white");
+                blue = reader.getColourToken("blue");
+                green = reader.getColourToken("green");
+                red = reader.getColourToken("red");
+                black = reader.getColourToken("black");
+                gold = reader.getColourToken("gold");
+            }
+            System.out.println("Num of Cards properties  found!");
+            // Call the method on the instance
+        } catch ( Exception e){
+                System.out.println("Cant find file");
+        }
+        if (customTokenMode == 0){
+            switch(numOfPlayers) {
+                case 2:
+                    tokens.put(WHITE, new Token(WHITE, 4));
+                    tokens.put(BLUE, new Token(BLUE, 4));
+                    tokens.put(GREEN, new Token(GREEN, 4));
+                    tokens.put(RED, new Token(RED, 4));
+                    tokens.put(BLACK, new Token(BLACK, 4));
+                    tokens.put(GOLD, new Token(GOLD, 5));
+                case 3:
+                    tokens.put(WHITE, new Token(WHITE, 5));
+                    tokens.put(BLUE, new Token(BLUE, 5));
+                    tokens.put(GREEN, new Token(GREEN, 5));
+                    tokens.put(RED, new Token(RED, 5));
+                    tokens.put(BLACK, new Token(BLACK, 5));
+                    tokens.put(GOLD, new Token(GOLD, 5));
+                default:
+                    tokens.put(WHITE, new Token(WHITE, 7));
+                    tokens.put(BLUE, new Token(BLUE, 7));
+                    tokens.put(GREEN, new Token(GREEN, 7));
+                    tokens.put(RED, new Token(RED, 7));
+                    tokens.put(BLACK, new Token(BLACK, 7));
+                    tokens.put(GOLD, new Token(GOLD, 5));
+            } 
+        }
+        if (customTokenMode == 1){
+            tokens.put(WHITE, new Token(WHITE, white));
+            tokens.put(BLUE, new Token(BLUE, blue));
+            tokens.put(GREEN, new Token(GREEN, green));
+            tokens.put(RED, new Token(RED, red));
+            tokens.put(BLACK, new Token(BLACK, black));
+            tokens.put(GOLD, new Token(GOLD, gold)); 
+        }
+    
         
     }
 

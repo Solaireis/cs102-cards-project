@@ -25,4 +25,11 @@ public class Reader {
     public int getNumOfCards(){
         return Integer.parseInt(configProps.getProperty("numOfCards")); 
     }
+
+    public int getCustomTokenMode(){
+        return Integer.parseInt(configProps.getProperty("enableCustomToken")); 
+    }
+    public int getColourToken(String str){
+        return Integer.parseInt(configProps.getProperty(str)); 
+    }
 }

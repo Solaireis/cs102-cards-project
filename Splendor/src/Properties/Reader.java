@@ -22,4 +22,7 @@ public class Reader {
     public int getNumOfPlayers() {
         return Integer.parseInt(configProps.getProperty("numOfPlayers"));
     }
+    public int getNumOfCards(){
+        return Integer.parseInt(configProps.getProperty("numOfCards")); 
+    }
 }

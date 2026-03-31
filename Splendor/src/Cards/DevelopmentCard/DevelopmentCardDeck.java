@@ -11,6 +11,8 @@ import java.io.IOException;
 import java.util.List;
 
 import Cards.Token.TokenBank;
+//import the properties reader class
+import Properties.*;
 
 public class DevelopmentCardDeck {
 
@@ -30,19 +32,82 @@ public class DevelopmentCardDeck {
 
     // Call the constructor in the DevelopementCard to initialise all the 90 cards
     private void initialiseCards() {
-        initializeDeck("src/Data/tier1.csv", level1Deck);
-        initializeDeck("src/Data/tier2.csv", level2Deck);
-        initializeDeck("src/Data/tier3.csv", level3Deck);
+        int numOfCards = 0;
+        try{
+            Reader reader = new Reader(); // Create an instance of Reader
+            numOfCards = reader.getNumOfCards();
+            System.out.println("Num of Cards properties  found!");
+            System.out.printf("Number of Cards Shuffled: %d \n", numOfCards);
+            // Call the method on the instance
+        } catch ( Exception e){
+                System.out.println("Cant find file");
+        }
 
+        //edge cases if properties is above 90
+        if (numOfCards < 60){
+            System.out.println("Num of Cards less than 60.. Setting to default 60");
+            numOfCards = 60;
+        }
+        //edge cases if properties is above 90
+        if (numOfCards > 90){
+            System.out.println("Num of Cards more than 90.. Setting to maximum 90");
+            numOfCards = 90; 
+        }
+        // run the cards development
+        if (numOfCards == 60){
+            initializeDeck("src/Data/tier1.csv", level1Deck, 30);
+            initializeDeck("src/Data/tier2.csv", level2Deck, 20);
+            initializeDeck("src/Data/tier3.csv", level3Deck, 10);
+        } else if ( numOfCards > 80){
+            initializeDeck("src/Data/tier1.csv", level1Deck, 40); 
+            initializeDeck("src/Data/tier2.csv", level2Deck, 30);
+            initializeDeck("src/Data/tier3.csv", level3Deck, numOfCards - 70);
+        } else if ( numOfCards > 70){
+            initializeDeck("src/Data/tier1.csv", level1Deck, 40); 
+            initializeDeck("src/Data/tier2.csv", level2Deck, numOfCards - 50);
+            initializeDeck("src/Data/tier3.csv", level3Deck, 10); 
+        } else{ //likely the number of cards here would be between 60 - 70
+            initializeDeck("src/Data/tier1.csv", level1Deck, numOfCards - 30); 
+            initializeDeck("src/Data/tier2.csv", level2Deck, 20); 
+            initializeDeck("src/Data/tier2.csv", level2Deck, 10); 
+        }
     }
 
     // Helper method to initialize the deck
-    public static void initializeDeck(String fileName, List<DevelopmentCard> deck) {
+    // public static void initializeDeck(String fileName, List<DevelopmentCard> deck) {
+    //     try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
+    //         String line;
+    //         br.readLine(); // skip header
+
+    //         while ((line = br.readLine()) != null) {
+    //             String[] values = line.split(",");
+
+    //             String color = values[0];
+    //             int points = Integer.parseInt(values[1]);
+    //             int blackCost = Integer.parseInt(values[2]);
+    //             int whiteCost = Integer.parseInt(values[3]);
+    //             int redCost = Integer.parseInt(values[4]);
+    //             int blueCost = Integer.parseInt(values[5]);
+    //             int greenCost = Integer.parseInt(values[6]);
+    //             String id = values[7];                              // needed for later updating UI
+
+    //             DevelopmentCard card = new DevelopmentCard(color, points, blackCost, whiteCost, redCost, blueCost, greenCost, id);
+    //             deck.add(card);
+    //         }
+
+    //     } catch (IOException e) {
+    //         e.printStackTrace();
+    //     }
+    // }
+    
+    //Current helper method
+    public static void initializeDeck(String fileName, List<DevelopmentCard> deck, int NumOfCards) {
         try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
+            int count = 0;
             String line;
             br.readLine(); // skip header
 
-            while ((line = br.readLine()) != null) {
+            while ((line = br.readLine()) != null && count < NumOfCards) {
                 String[] values = line.split(",");
 
                 String color = values[0];
@@ -56,6 +121,9 @@ public class DevelopmentCardDeck {
 
                 DevelopmentCard card = new DevelopmentCard(color, points, blackCost, whiteCost, redCost, blueCost, greenCost, id);
                 deck.add(card);
+                count++;
+                //test code to verify that indeed only the set number of cards can be initialised
+                System.out.println(count);
             }
 
         } catch (IOException e) {

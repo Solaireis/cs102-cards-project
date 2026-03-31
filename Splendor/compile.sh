@@ -7,4 +7,4 @@
 #!/bin/bash
 mkdir -p classes
 javac -d classes -cp "src:lib/*" src/Test/Game.java
-cp src/Test/config.properties classes/config.properties
+cp config.properties classes/config.properties

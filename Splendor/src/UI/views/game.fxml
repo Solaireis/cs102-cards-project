@@ -9,6 +9,7 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.layout.HBox?>
+<?import javafx.scene.control.Separator?>
 
 <AnchorPane fx:id="root"
             prefHeight="900.0" prefWidth="1400.0"
@@ -108,6 +109,50 @@
             </children>
         </VBox>
 
+        <!-- Options Menu and Player/Turn Indicator -->
+        <StackPane
+            AnchorPane.leftAnchor="20.0"
+            AnchorPane.topAnchor="0.0"
+            AnchorPane.bottomAnchor="0.0"
+            alignment="TOP_LEFT"
+            pickOnBounds="false">
+
+            <VBox fx:id="actionPanel"
+                  alignment="TOP_LEFT"
+                  spacing="14"
+                  maxWidth="240"
+                  translateY="0"
+                  style="-fx-background-color: rgba(0,0,0,0.28);
+                         -fx-background-radius: 18;
+                         -fx-padding: 18;">
+
+                <Label fx:id="currentPlayerLabel" text="Player 1"
+                       style="-fx-text-fill: white; -fx-font-size: 26; -fx-font-weight: bold;"/>
+                <Label fx:id="turnLabel" text="Turn 1"
+                       style="-fx-text-fill: white; -fx-font-size: 20;"/>
+                <Label fx:id="actionStatusLabel" text="Choose an action"
+                       style="-fx-text-fill: white; -fx-font-size: 16;"/>
+
+                <Button fx:id="takeTokensButton" text="Take Tokens" onAction="#handleTakeTokens" prefWidth="180"/>
+                <Button fx:id="buyCardButton" text="Buy Card" onAction="#handleBuyCard" prefWidth="180"/>
+                <Button fx:id="reserveCardButton" text="Reserve Card" onAction="#handleReserveCard" prefWidth="180"/>
+                <Button fx:id="endTurnButton" text="End Turn" onAction="#handleEndTurn" prefWidth="180"/>
+
+                <Separator prefWidth="190"/>
+
+                <Label text="Current Player Info"
+                       style="-fx-text-fill: white; -fx-font-size: 18; -fx-font-weight: bold;"/>
+                <Label fx:id="pointsLabel" text="Points: 0" style="-fx-text-fill: white;"/>
+                <Label fx:id="reservedCountLabel" text="Reserved: 0" style="-fx-text-fill: white;"/>
+                <Label fx:id="boughtCountLabel" text="Bought: 0" style="-fx-text-fill: white;"/>
+
+                <VBox fx:id="currentPlayerTokensBox" spacing="6"/>
+
+                <Button text="View Reserved" onAction="#handleViewReserved" prefWidth="180"/>
+                <Button text="View Bought" onAction="#handleViewBought" prefWidth="180"/>
+            </VBox>
+        </StackPane>
+
         <!-- Bottom status bar -->
         <HBox fx:id="statusBar"
               alignment="CENTER_LEFT"
@@ -134,7 +179,7 @@
                               -fx-font-size: 15px;
                               -fx-font-weight: bold;" />
         
-                <Label fx:id="statusLabel"
+                <Label fx:id="statusBarLabel"
                        text="Welcome to Splendor!"
                        maxWidth="1.7976931348623157E308"
                        HBox.hgrow="ALWAYS"

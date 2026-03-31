@@ -23,7 +23,10 @@ public class GameLogic {
     private final DevelopmentCardFaceUP developmentFaceUp;
     private final NobleDeck nobleDeck;
     private final NobleFaceUP nobleFaceUp;
-    private final NobleAttractService nobleService;
+
+    private final NobleService nobleService;
+    private ArrayList<Noble> pendingNobleChoices = new ArrayList<>();
+    private boolean waitingForNobleChoice = false;
 
     private int currentPlayerIndex = 0;
     private boolean gameOver = false;
@@ -49,7 +52,7 @@ public class GameLogic {
         this.developmentFaceUp = new DevelopmentCardFaceUP(developmentDeck);
         this.nobleDeck = new NobleDeck();
         this.nobleFaceUp = new NobleFaceUP(nobleDeck, numOfPlayers);
-        this.nobleService = new NobleAttractService();
+        this.nobleService = new NobleService();
     }
 
     public Player getCurrentPlayer() {
@@ -72,6 +75,14 @@ public class GameLogic {
         return nobleFaceUp;
     }
 
+    public ArrayList<Noble> getPendingNobleChoices() {
+        return pendingNobleChoices;
+    }
+
+    public boolean isWaitingForNobleChoice() {
+        return waitingForNobleChoice;
+    }
+    
     public boolean isGameOver() {
         return gameOver;
     }
@@ -121,6 +132,7 @@ public class GameLogic {
         return MoveResult.success("Tokens taken successfully.");
     }
 
+    
     public MoveResult takeTwoTokens(String color) {
         Player player = getCurrentPlayer();
         color = color.toUpperCase();
@@ -263,24 +275,28 @@ public class GameLogic {
         return getCurrentPlayer().totalTokens() > 10;
     }
 
+
     public MoveResult endTurn() {
+        // Guard against being called when player hasn't ppicked yet
+        if (waitingForNobleChoice) {
+            return MoveResult.fail("Player must choose a noble first.");
+        }
+
         Player player = getCurrentPlayer();
 
         if (player.totalTokens() > 10) {
             return MoveResult.fail("Player must discard down to 10 tokens first.");
         }
 
-        awardNobleIfAny(player);
+        boolean needsChoice = awardNobleIfAny(player);
 
-        if (player.getPoints() >= winningCondition) {
-            lastRoundTriggered = true;
-            gameOver = true; // keep this for now to match your old flow
-            return MoveResult.success("Player reached winning condition.");
+        if (needsChoice) {
+            return MoveResult.success("Player must choose one noble.");
         }
 
-        currentPlayerIndex = (currentPlayerIndex + 1) % players.size();
-        return MoveResult.success("Turn ended.");
+        return finishTurn(player);
     }
+
 
     public List<Player> determineWinners() {
         ArrayList<Player> winner = new ArrayList<>();
@@ -302,8 +318,26 @@ public class GameLogic {
         return winner;
     }
 
-    private void awardNobleIfAny(Player player) {
-        // may need refactoring if NobleAttractService still expects Scanner
+    private boolean awardNobleIfAny(Player player) {
+        ArrayList<Noble> eligible = nobleService.getEligibleNobles(player, nobleFaceUp);
+
+        if (eligible.isEmpty()) {
+            waitingForNobleChoice = false;
+            pendingNobleChoices.clear();
+            return false;
+        }
+
+        if (eligible.size() == 1) {
+            Noble awarded = nobleService.awardChosenNoble(player, nobleFaceUp, eligible.get(0));
+            waitingForNobleChoice = false;
+            pendingNobleChoices.clear();
+            System.out.println(player.getName() + " attracted noble: " + awarded);
+            return false;
+        }
+
+        pendingNobleChoices = new ArrayList<>(eligible);
+        waitingForNobleChoice = true;
+        return true;
     }
 
     private void giveGoldIfAvailable(Player player) {
@@ -318,5 +352,38 @@ public class GameLogic {
             if (color.equals(c)) return true;
         }
         return false;
+    }
+
+    public MoveResult chooseNoble(int index) {
+        if (!waitingForNobleChoice) {
+            return MoveResult.fail("No noble choice is pending.");
+        }
+
+        if (index < 0 || index >= pendingNobleChoices.size()) {
+            return MoveResult.fail("Invalid noble choice.");
+        }
+
+        Player player = getCurrentPlayer();
+        Noble chosen = pendingNobleChoices.get(index);
+
+        nobleService.awardChosenNoble(player, nobleFaceUp, chosen);
+
+        waitingForNobleChoice = false;
+        pendingNobleChoices.clear();
+
+        System.out.println(player.getName() + " attracted noble: " + chosen);
+
+        return finishTurn(player);
+    }
+
+    private MoveResult finishTurn(Player player) {
+        if (player.getPoints() >= winningCondition) {
+            lastRoundTriggered = true;
+            gameOver = true;
+            return MoveResult.success("Player reached winning condition.");
+        }
+
+        currentPlayerIndex = (currentPlayerIndex + 1) % players.size();
+        return MoveResult.success("Turn ended.");
     }
 }

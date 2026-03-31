@@ -57,11 +57,32 @@ public class Controller {
     @FXML private ImageView redTokenView;
     @FXML private ImageView blueTokenView;
 
+    // Options Menu Label
+    @FXML private Label currentPlayerLabel;
+    @FXML private Label turnLabel;
+    @FXML private Label actionStatusLabel;
+
+    // 4 Choices Buttons
+    @FXML private Button takeTokensButton;
+    @FXML private Button buyCardButton;
+    @FXML private Button reserveCardButton;
+    @FXML private Button endTurnButton;
+
+    @FXML private Label pointsLabel;
+    @FXML private Label reservedCountLabel;
+    @FXML private Label boughtCountLabel;
+    @FXML private VBox currentPlayerTokensBox;
+
+    //temporary
+    private int currentPlayerNumber = 1;
+    private int turnNumber = 1;
+    private int totalPlayers = 2; // change later if needed
+
     // Board (4 rows of cards)
     @FXML private StackPane boardContainer;
 
-    // Label to show text after moves (instead of console)
-    @FXML private Label statusLabel;
+    // Bottom Status Label
+    @FXML private Label statusBarLabel;
     @FXML private HBox statusBar;
     @FXML private Label statusIcon;
 
@@ -101,19 +122,25 @@ public class Controller {
         NobleFaceUP upNobles = new NobleFaceUP(nobleDeck, 2);
 
         boardView.loadNobles(upNobles.getFaceUp());
-        
         boardView.loadTier1(upDeck.getFaceUp(1));
         boardView.loadTier2(upDeck.getFaceUp(2));
         boardView.loadTier3(upDeck.getFaceUp(3));
 
-        // Success bar
-        // MoveResult result = MoveResult.success("hi");
-        // showSuccess(result.getMessage());
-
-        // Fail bar
-        MoveResult result = MoveResult.fail("hi");
-        showError(result.getMessage());
+        refreshLeftPanel();
     }
+
+    private void refreshLeftPanel() {
+        currentPlayerLabel.setText("Player " + currentPlayerNumber);
+        turnLabel.setText("Turn " + turnNumber);
+        actionStatusLabel.setText("Choose an action");
+
+        // temporary fake values for now
+        pointsLabel.setText("Points: 0");
+        reservedCountLabel.setText("Reserved: 0");
+        boughtCountLabel.setText("Bought: 0");
+
+        updateCurrentPlayerTokensBox();
+    }   
 
 
     public void setGameLogic(GameLogic gameLogic) {
@@ -122,41 +149,70 @@ public class Controller {
     }
 
     @FXML
-    private void handleTakeRed() {
-        MoveResult result = gameLogic.takeTwoTokens(TokenBank.RED);
-        statusLabel.setText(result.getMessage());
+    private void handleTakeTokens() {
+        actionStatusLabel.setText("Take Tokens selected.");
+    }
 
-        if (result.isSuccess()) {
-            showSuccess(result.getMessage());
-            refreshUI();
-        } else {
-            showError(result.getMessage());
-        }
+    @FXML
+    private void handleBuyCard() {
+        actionStatusLabel.setText("Buy Card selected.");
+    }
+
+    @FXML
+    private void handleReserveCard() {
+        actionStatusLabel.setText("Reserve Card selected.");
     }
 
     @FXML
     private void handleEndTurn() {
-        MoveResult result = gameLogic.endTurn();
-        statusLabel.setText(result.getMessage());
+        currentPlayerNumber++;
 
-        if (result.isSuccess()) {
-            showSuccess(result.getMessage());
-            refreshUI();
-        } else {
-            showError(result.getMessage());
+        if (currentPlayerNumber > totalPlayers) {
+            currentPlayerNumber = 1;
+            turnNumber++;
         }
-    }
+
+        refreshLeftPanel();
+    }    
 
     private void refreshUI() {
         // update labels, token counts, visible cards, reserves, current player, etc.
     }
     
+    private void updateCurrentPlayerTokensBox() {
+        currentPlayerTokensBox.getChildren().clear();
 
+        Label white = new Label("White: 2");
+        Label blue = new Label("Blue: 1");
+        Label green = new Label("Green: 0");
+        Label red = new Label("Red: 3");
+        Label black = new Label("Black: 1");
+        Label gold = new Label("Gold: 1");
+
+        // when have functioning player, then use this
+        // Label white = new Label("White: " + player.getTokens("WHITE"));
+        // Label blue = new Label("Blue: " + player.getTokens("BLUE"));
+        // Label green = new Label("Green: " + player.getTokens("GREEN"));
+        // Label red = new Label("Red: " + player.getTokens("RED"));
+        // Label black = new Label("Black: " + player.getTokens("BLACK"));
+        // Label gold = new Label("Gold: " + player.getTokens("GOLD"));
+
+        white.setStyle("-fx-text-fill: white;");
+        blue.setStyle("-fx-text-fill: white;");
+        green.setStyle("-fx-text-fill: white;");
+        red.setStyle("-fx-text-fill: white;");
+        black.setStyle("-fx-text-fill: white;");
+        gold.setStyle("-fx-text-fill: white;");
+
+        currentPlayerTokensBox.getChildren().addAll(
+            white, blue, green, red, black, gold
+        );
+    }
 
 
 /* ----------Label Helper Methods------------------------------------ */
     private void showSuccess(String message) {
-        statusLabel.setText(message);
+        statusBarLabel.setText(message);
         statusIcon.setText("✓");
 
         statusBar.setStyle(
@@ -177,7 +233,7 @@ public class Controller {
     }
 
     private void showError(String message) {
-        statusLabel.setText(message);
+        statusBarLabel.setText(message);
         statusIcon.setText("✕");
 
         statusBar.setStyle(
@@ -375,5 +431,15 @@ public class Controller {
     @FXML
     private void onBlueTokenClick() {
         System.out.println("Blue token clicked");
+    }
+
+    @FXML
+    private void handleViewReserved() {
+        System.out.println("view reserved clicked");
+    }
+
+    @FXML
+    private void handleViewBought() {
+        System.out.println("view bought clicked");
     }
 }

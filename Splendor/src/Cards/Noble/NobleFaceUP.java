@@ -39,6 +39,10 @@ public class NobleFaceUP {
         faceUp.remove(index);
     }
 
+    public void remove(Noble noble) {
+        faceUp.remove(noble);
+    }
+
     public void printMarket() {
         System.out.println("=== Noble ===");
         for (int i = 0; i < faceUp.size(); i++) {

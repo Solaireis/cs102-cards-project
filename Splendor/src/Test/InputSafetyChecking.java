@@ -16,7 +16,6 @@ public class InputSafetyChecking {
     private static final String RED = "RED";
     private static final String BLACK = "BLACK";
 
-
     public static int safeInt(Scanner sc, String invalidPrompt) {
         while (!sc.hasNextInt()) {
             sc.next();
@@ -27,14 +26,13 @@ public class InputSafetyChecking {
         return sc.nextInt();
     }
 
-    
     public static int readIntInRange(Scanner sc, int minInclusive, int maxInclusive, String prompt) {
         while (true) {
             if (prompt != null && !prompt.isBlank()) {
                 System.out.print(prompt);
             }
 
-            int color = safeInt(sc, "Enter a number: ");
+            int color = safeInt(sc, "Please enter a valid number: ");
             sc.nextLine();
             if (color >= minInclusive && color <= maxInclusive) {
                 return color;
@@ -42,7 +40,6 @@ public class InputSafetyChecking {
             System.out.println("Invalid choice, try again.");
         }
     }
-
 
     public static List<String> parseThreeColorsFlexibly(String rawInput, String[] takeColors) {
 
@@ -78,7 +75,8 @@ public class InputSafetyChecking {
             return null;
         }
 
-        if (colors.get(0).equals(colors.get(1)) || colors.get(0).equals(colors.get(2)) || colors.get(1).equals(colors.get(2))) {
+        if (colors.get(0).equals(colors.get(1)) || colors.get(0).equals(colors.get(2))
+                || colors.get(1).equals(colors.get(2))) {
             return null;
         }
 
@@ -91,7 +89,6 @@ public class InputSafetyChecking {
         }
         return input.trim().toUpperCase();
     }
-    
 
     public static String matchColor(String chunk, int start) {
         if (chunk.startsWith(WHITE, start)) {

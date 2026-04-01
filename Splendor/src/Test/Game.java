@@ -46,7 +46,7 @@ public class Game {
         System.out.println("============================================================");
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args){
         Scanner sc = new Scanner(System.in);
 
         //need to change path of file that reader is reading from
@@ -72,7 +72,7 @@ public class Game {
             System.out.printf("Number of Players: %d \n ", numOfPlayers);
 
             // Call the method on the instance
-        } catch ( Exception e){
+        } catch (Exception e){
             System.out.println("Cant find file");
         }
         // If no config properties is found
@@ -81,9 +81,9 @@ public class Game {
             System.out.println("File not found.. Default winning Condition set to 15");
         }
 
-        while (numOfPlayers <= 0) {
+        while (numOfPlayers <= 0){
             System.out.print("Enter number of players: ");
-            numOfPlayers = InputSafetyChecking.safeInt(sc, "Enter a number: ");
+            numOfPlayers = InputSafetyChecking.safeInt(sc, "Please enter a valid number: ");
             sc.nextLine();
             if (numOfPlayers <= 0) {
                 System.out.println("At least 1 player needed");
@@ -145,7 +145,6 @@ public class Game {
                         finalRoundStarterIndex = i;
                     }
                 } else {
-                    turnDisplay(players, player, tb, nobleFaceUp, developmentFaceUp);
                     boolean quit = false;
                     boolean valid = false;
                     while (!valid) {
@@ -207,7 +206,8 @@ public class Game {
     }
 
     //------------------------------------------------------------------------------------------------------------------------------------------------------------
-    private static void turnDisplay(ArrayList<Player> players, Player player, TokenBank tb, NobleFaceUP nobleFaceUp, DevelopmentCardFaceUP developmentFaceUp) {
+    private static void turnDisplay(ArrayList<Player> players, Player player, TokenBank tb, NobleFaceUP nobleFaceUp,
+            DevelopmentCardFaceUP developmentFaceUp) {
         System.out.println("\n==============================");
         System.out.println("BANK: ");
         tb.printBank();
@@ -270,32 +270,44 @@ public class Game {
             return false;
         }
 
-        System.out.println("Enter 3 DIFFERENT colors (WHITE/BLUE/GREEN/RED/BLACK) separated by spaces:");
-        System.out.print("> ");
-        String input = sc.nextLine();
+        while (true){
+            System.out.println(
+                    "Enter 3 DIFFERENT colors (WHITE/BLUE/GREEN/RED/BLACK) separated by spaces (or type back):");
+            System.out.print("> ");
+            String input = sc.nextLine();
 
-        List<String> colors = InputSafetyChecking.parseThreeColorsFlexibly(input, TAKE_COLORS);
-        if (colors == null){
-            System.out.println("Please enter valid colors.");
-            return false;
-        }
-
-        for (String color : colors) {
-            if (!tb.hasEnough(color, 1)) {
-                System.out.println("Bank does not have enough " + color);
+            if (isBackCommand(input)){
                 return false;
             }
-        }
 
-        System.out.print("Player has taken ");
-        for (String color : colors){
-            tb.remove(color, 1);
-            player.addTokens(color, 1);
-            System.out.print(color + " ");
-        }
+            List<String> colors = InputSafetyChecking.parseThreeColorsFlexibly(input, TAKE_COLORS);
+            if (colors == null) {
+                System.out.println("Please enter valid colors.");
+                continue;
+            }
 
-        System.out.print("tokens.");
-        return true;
+            boolean enoughInBank = true;
+            for (String color : colors) {
+                if (!tb.hasEnough(color, 1)) {
+                    System.out.println("Bank does not have enough " + color);
+                    enoughInBank = false;
+                    break;
+                }
+            }
+            if (!enoughInBank) {
+                continue;
+            }
+
+            System.out.print("Player has taken ");
+            for (String color : colors) {
+                tb.remove(color, 1);
+                player.addTokens(color, 1);
+                System.out.print(color + " ");
+            }
+
+            System.out.print("tokens.");
+            return true;
+        }
     }
 
     //------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -307,26 +319,24 @@ public class Game {
 
         String color = "";
         while (true) {
-            System.out.println("Enter a color (WHITE/BLUE/GREEN/RED/BLACK):");
+            System.out.println("Enter a color (WHITE/BLUE/GREEN/RED/BLACK) or type back:");
             System.out.print("> ");
             color = InputSafetyChecking.normalizeUpper(sc.nextLine());
+
+            if (isBackCommand(color)) {
+                return false;
+            }
 
             String matched = InputSafetyChecking.matchColor(color, 0);
             if (matched == null || matched.length() != color.length()) {
                 System.out.println("Please enter valid color.");
                 continue;
             }
+            if (!tb.hasEnough(color, 4)) {
+                System.out.println("Bank does not have at least 4 " + color);
+                continue;
+            }
             break;
-        }
-
-        if (color.equals(TokenBank.GOLD)) {
-            System.out.println("You cannot take GOLD using this action.");
-            return false;
-        }
-
-        if (!tb.hasEnough(color, 4)) {
-            System.out.println("Bank does not have at least 4 " + color);
-            return false;
         }
 
         tb.remove(color, 2);
@@ -368,64 +378,88 @@ public class Game {
     //------------------------------------------------------------------------------------------------------------------------------------------------------------------
     private static boolean buyCard(Scanner sc, TokenBank tb, Player player, DevelopmentCardFaceUP developmentFaceUp,
             DevelopmentCardDeck developmentDesk) {
-        System.out.print("Enter location of card (Reserve / Market): ");
-        String location = sc.nextLine().trim().toLowerCase();
+        while (true) {
+            System.out.print("Enter location of card (Reserve / Market) or type back: ");
+            String location = sc.nextLine().trim().toLowerCase();
 
-        DevelopmentCard chosen = null;
-        int level = 0;
-        int index = 0;
-        if (location.equals("reserve")) {
-            if (player.totalReserves() == 0) {
-                System.out.println("No cards in reserve");
+            if (isBackCommand(location)) {
                 return false;
             }
 
-            System.out.print("Enter index of card (0-2): ");
-            index = InputSafetyChecking.safeInt(sc, "Enter a number: ");
-            sc.nextLine();
-            try {
-                chosen = player.getReserveCard(index);
-            } catch (Exception e) {
-                System.out.println("card does not exist at index " + index);
-                return false;
-            }
-        } else if (location.equals("market")) {
-            try {
-                System.out.print("Choose level (1/2/3): ");
-                level = InputSafetyChecking.safeInt(sc, "Enter a number: ");
+            DevelopmentCard chosen = null;
+            int level = 0;
+            int index = 0;
 
-                System.out.print("Choose card index: ");
-                index = InputSafetyChecking.safeInt(sc, "Enter a number: ");
-
-                chosen = developmentFaceUp.getCard(level, index);
-            } catch (Exception e) {
-                System.out.println(e.getMessage());
-                return false;
-            }
-
-        } else {
-            System.out.println("Invalid location");
-            return false;
-        }
-
-        try {
-            if (!PurchaseService.canBuy(player, chosen)) {
-                System.out.println("You cannot afford this card.");
-                return false;
-            }
-
-            PurchaseService.buy(player, chosen, tb);
             if (location.equals("reserve")) {
-                player.buyReserve(chosen);
+                if (player.totalReserves() == 0) {
+                    System.out.println("No cards in reserve. Please choose market.");
+                    continue;
+                }
+
+                while (true) {
+                    Integer reserveIndex = readIntOrBack(sc,
+                            "Enter index of card (0-" + (player.totalReserves() - 1) + ") or type back: ");
+                    if (reserveIndex == null) {
+                        return false;
+                    }
+                    index = reserveIndex;
+                    if (index < 0 || index >= player.totalReserves()) {
+                        System.out.println("Please enter a valid reserve index.");
+                        continue;
+                    }
+                    chosen = player.getReserveCard(index);
+                    break;
+                }
+            } else if (location.equals("market")) {
+                while (true) {
+                    Integer levelInput = readIntOrBack(sc, "Choose level (1/2/3) or type back: ");
+                    if (levelInput == null) {
+                        return false;
+                    }
+                    level = levelInput;
+
+                    if (level < 1 || level > 3) {
+                        System.out.println("Please enter level 1, 2, or 3.");
+                        continue;
+                    }
+
+                    Integer cardIndex = readIntOrBack(sc, "Choose card index (or type back): ");
+                    if (cardIndex == null) {
+                        return false;
+                    }
+                    index = cardIndex;
+
+                    if (index < 0 || index >= developmentFaceUp.getFaceUp(level).size()) {
+                        System.out.println("Please enter a valid card index.");
+                        continue;
+                    }
+
+                    chosen = developmentFaceUp.getCard(level, index);
+                    break;
+                }
             } else {
-                developmentFaceUp.removeAndRefill(level, index, developmentDesk);
+                System.out.println("Invalid location. Please type Reserve or Market.");
+                continue;
             }
 
-            System.out.println("Bought card: " + chosen);
-            return true;
-        } catch (Exception e) {
-            System.out.println("Buy failed: " + e.getMessage());
-            return false;
+            if (!PurchaseService.canBuy(player, chosen)) {
+                System.out.println("You cannot afford this card. Choose another card.");
+                continue;
+            }
+
+            try {
+                PurchaseService.buy(player, chosen, tb);
+                if (location.equals("reserve")) {
+                    player.buyReserve(chosen);
+                } else {
+                    developmentFaceUp.removeAndRefill(level, index, developmentDesk);
+                }
+
+                System.out.println("Bought card: " + chosen);
+                return true;
+            } catch (Exception e) {
+                System.out.println("Buy failed: " + e.getMessage());
+            }
         }
     }
 
@@ -437,82 +471,90 @@ public class Game {
             return false;
         }
 
-        System.out.println("Option a: draw first card from any deck");
-        System.out.println("Option b: choose a face up card");
-        System.out.print("Your Choice: ");
-        String reserveLine = sc.nextLine().trim().toLowerCase();
-        if (reserveLine.isEmpty()) {
-            System.out.println("invalid choice");
-            return false;
-        }
-        char choice = reserveLine.charAt(0);
-
-        DevelopmentCard chosen = null;
-        if (choice == 'a') {
-            System.out.print("enter level: ");
-            int level = InputSafetyChecking.safeInt(sc, "Enter a number: ");
-            sc.nextLine();
-            switch (level) {
-                default:
-                    System.out.println("invalid level");
-                    return false;
-                case 1:
-                    if (!developmentDesk.isLevel1Empty()) {
-                        chosen = developmentDesk.drawLevel1();
-                    } else {
-                        System.out.println("no remaining cards in level 1");
-                        return false;
-                    }
-                    break;
-                case 2:
-                    if (!developmentDesk.isLevel2Empty()) {
-                        chosen = developmentDesk.drawLevel2();
-                    } else {
-                        System.out.println("no remaining cards in level 2");
-                        return false;
-                    }
-                    break;
-                case 3:
-                    if (!developmentDesk.isLevel3Empty()) {
-                        chosen = developmentDesk.drawLevel3();
-                    } else {
-                        System.out.println("no remaining cards in level 3");
-                        return false;
-                    }
-            }
-        } else if (choice == 'b') {
-            int level = 0;
-            int index = 0;
-            try {
-                System.out.print("Choose level (1/2/3): ");
-                level = InputSafetyChecking.safeInt(sc, "Enter a number: ");
-
-                System.out.print("Choose card index: ");
-                index = InputSafetyChecking.safeInt(sc, "Enter a number: ");
-
-                chosen = developmentFaceUp.getCard(level, index);
-                developmentFaceUp.removeAndRefill(level, index, developmentDesk);
-            } catch (Exception e) {
-                System.out.println(e.getMessage());
+        while (true){
+            System.out.println("Option a: draw first card from any deck");
+            System.out.println("Option b: choose a face up card");
+            System.out.print("Your Choice (a/b, or type back): ");
+            String reserveLine = sc.nextLine().trim().toLowerCase();
+            if (isBackCommand(reserveLine)) {
                 return false;
             }
+            if (reserveLine.isEmpty()) {
+                System.out.println("Invalid choice. Please enter a or b.");
+                continue;
+            }
+            char choice = reserveLine.charAt(0);
 
-        } else {
-            System.out.println("invalid choice");
-            return false;
+            DevelopmentCard chosen = null;
+            if (choice == 'a') {
+                while (true) {
+                    Integer levelInput = readIntOrBack(sc, "Enter level (1/2/3) or type back: ");
+                    if (levelInput == null) {
+                        return false;
+                    }
+                    int level = levelInput;
+                    if (level < 1 || level > 3) {
+                        System.out.println("Please enter level 1, 2, or 3.");
+                        continue;
+                    }
+
+                    if (level == 1 && !developmentDesk.isLevel1Empty()) {
+                        chosen = developmentDesk.drawLevel1();
+                    } else if (level == 2 && !developmentDesk.isLevel2Empty()) {
+                        chosen = developmentDesk.drawLevel2();
+                    } else if (level == 3 && !developmentDesk.isLevel3Empty()) {
+                        chosen = developmentDesk.drawLevel3();
+                    } else {
+                        System.out.println("No remaining cards in that level. Choose another level.");
+                        continue;
+                    }
+                    break;
+                }
+            } else if (choice == 'b') {
+                while (true) {
+                    Integer levelInput = readIntOrBack(sc, "Choose level (1/2/3) or type back: ");
+                    if (levelInput == null) {
+                        return false;
+                    }
+                    int level = levelInput;
+
+                    if (level < 1 || level > 3) {
+                        System.out.println("Please enter level 1, 2, or 3.");
+                        continue;
+                    }
+
+                    Integer indexInput = readIntOrBack(sc, "Choose card index (or type back): ");
+                    if (indexInput == null) {
+                        return false;
+                    }
+                    int index = indexInput;
+
+                    if (index < 0 || index >= developmentFaceUp.getFaceUp(level).size()) {
+                        System.out.println("Please enter a valid card index.");
+                        continue;
+                    }
+
+                    chosen = developmentFaceUp.getCard(level, index);
+                    developmentFaceUp.removeAndRefill(level, index, developmentDesk);
+                    break;
+                }
+            } else {
+                System.out.println("Invalid choice. Please enter a or b.");
+                continue;
+            }
+
+            player.addReserve(chosen);
+            if (tb.get(TokenBank.GOLD) > 0) {
+                tb.remove(TokenBank.GOLD, 1);
+                player.addTokens(TokenBank.GOLD, 1);
+                System.out.println("Gold token added to inventory");
+            } else {
+                System.out.println("No remaining gold tokens");
+            }
+
+            System.out.println("Card reserved successfully");
+            return true;
         }
-
-        player.addReserve(chosen);
-        if (tb.get(TokenBank.GOLD) > 0) {
-            tb.remove(TokenBank.GOLD, 1);
-            player.addTokens(TokenBank.GOLD, 1);
-            System.out.println("Gold token added to inventory");
-        } else {
-            System.out.println("No remaining gold tokens");
-        }
-
-        System.out.println("Card reserved successfully");
-        return true;
     }
 
     // --------------------------------------------------------------------------------------------------------
@@ -523,5 +565,28 @@ public class Game {
                 || TokenBank.RED.equals(c)
                 || TokenBank.BLACK.equals(c)
                 || TokenBank.GOLD.equals(c);
+    }
+
+    private static boolean isBackCommand(String input) {
+        return input != null && input.trim().equalsIgnoreCase("back");
+    }
+
+    private static Integer readIntOrBack(Scanner sc, String prompt) {
+        while (true) {
+            if (prompt != null && !prompt.isBlank()) {
+                System.out.print(prompt);
+            }
+
+            String line = sc.nextLine().trim();
+            if (isBackCommand(line)) {
+                return null;
+            }
+
+            try {
+                return Integer.parseInt(line);
+            } catch (NumberFormatException e) {
+                System.out.println("Please enter a valid number or type back.");
+            }
+        }
     }
 }

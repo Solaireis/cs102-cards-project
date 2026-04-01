@@ -133,7 +133,7 @@ public class GameLogic {
             player.addTokens(color, 1);
         }
 
-        return MoveResult.success("Tokens taken successfully.");
+        return MoveResult.success(player.getName() +  " took 3 tokens: " + a + ", " + b + ", " + c + ".");
     }
 
     
@@ -160,7 +160,7 @@ public class GameLogic {
         tokenBank.remove(color, 2);
         player.addTokens(color, 2);
 
-        return MoveResult.success("Player has taken 2 " + color + " tokens.");
+        return MoveResult.success(player.getName() + " has taken 2 " + color + " tokens.");
     }
 
     public MoveResult buyMarketCard(int level, int index) {
@@ -176,7 +176,7 @@ public class GameLogic {
             PurchaseService.buy(player, chosen, tokenBank);
             developmentFaceUp.removeAndRefill(level, index, developmentDeck);
 
-            return MoveResult.success("Player " + (currentPlayerIndex + 1) + " bought card: " + chosen);
+            return MoveResult.success(player.getName() + " bought card: " + chosen);
         } catch (Exception e) {
             return MoveResult.fail("Buy failed: " + e.getMessage());
         }
@@ -199,7 +199,7 @@ public class GameLogic {
             PurchaseService.buy(player, chosen, tokenBank);
             player.buyReserve(chosen);
 
-            return MoveResult.success("Player " + (currentPlayerIndex + 1) + " bought card: " + chosen);
+            return MoveResult.success(player.getName() + " bought card: " + chosen);
         } catch (Exception e) {
             return MoveResult.fail("Buy failed: " + e.getMessage());
         }
@@ -238,7 +238,6 @@ public class GameLogic {
         }
 
         player.addReserve(chosen);
-        //giveGoldIfAvailable(player);
 
         return MoveResult.success("Card reserved successfully.");
     }
@@ -279,9 +278,7 @@ public class GameLogic {
         return getCurrentPlayer().totalTokens() > 10;
     }
 
-
     public MoveResult endTurn() {
-        // Guard against being called when player hasn't picked yet
         if (waitingForNobleChoice) {
             return MoveResult.fail("Player must choose a noble first.");
         }
@@ -292,13 +289,19 @@ public class GameLogic {
             return MoveResult.fail("Player must discard down to 10 tokens first.");
         }
 
-        boolean needsChoice = awardNobleIfAny(player);
+        String nobleMessage = awardNobleIfAny(player);
 
-        if (needsChoice) {
+        if (waitingForNobleChoice) {
             return MoveResult.success("Player must choose one noble.");
         }
 
-        return finishTurn(player);
+        MoveResult finishResult = finishTurn(player);
+
+        if (nobleMessage != null) {
+            return MoveResult.success(nobleMessage + " " + finishResult.getMessage());
+        }
+
+        return finishResult;
     }
 
 
@@ -322,26 +325,27 @@ public class GameLogic {
         return winner;
     }
 
-    private boolean awardNobleIfAny(Player player) {
+
+
+    private String awardNobleIfAny(Player player) {
         ArrayList<Noble> eligible = nobleService.getEligibleNobles(player, nobleFaceUp);
 
         if (eligible.isEmpty()) {
             waitingForNobleChoice = false;
             pendingNobleChoices.clear();
-            return false;
+            return null;
         }
 
         if (eligible.size() == 1) {
             Noble awarded = nobleService.awardChosenNoble(player, nobleFaceUp, eligible.get(0));
             waitingForNobleChoice = false;
             pendingNobleChoices.clear();
-            System.out.println(player.getName() + " attracted noble: " + awarded);
-            return false;
+            return player.getName() + " attracted noble: " + awarded;
         }
 
         pendingNobleChoices = new ArrayList<>(eligible);
         waitingForNobleChoice = true;
-        return true;
+        return null;
     }
 
     public MoveResult chooseNoble(int index) {
@@ -361,46 +365,52 @@ public class GameLogic {
         waitingForNobleChoice = false;
         pendingNobleChoices.clear();
 
-        System.out.println(player.getName() + " attracted noble: " + chosen);
-
-        return finishTurn(player);
+        MoveResult finishResult = finishTurn(player);
+        return MoveResult.success(player.getName() + " attracted noble: " + chosen + " " + finishResult.getMessage());
     }
 
     private MoveResult finishTurn(Player player) {
-        if (player.getPoints() >= winningCondition) {
+        boolean reachedWinningCondition = player.getPoints() >= winningCondition;
+
+        if (reachedWinningCondition && !lastRoundTriggered) {
             lastRoundTriggered = true;
-            gameOver = true;
-            return MoveResult.success("Player reached winning condition.");
         }
 
+        boolean endOfRound = (currentPlayerIndex == players.size() - 1);
 
-        // increment turn number once 1 cycle of all the players are done
-        if (currentPlayerIndex == players.size() - 1) {
+        if (endOfRound) {
+            if (lastRoundTriggered) {
+                gameOver = true;
+                return MoveResult.success("Final round complete.");
+            }
+
             turnNumber++;
         }
 
         currentPlayerIndex = (currentPlayerIndex + 1) % players.size();
+
+        if (reachedWinningCondition) {
+            return MoveResult.success("Final round triggered. Finish the current round.");
+        }
+
         return MoveResult.success("Turn ended.");
     }
 
-    public MoveResult takeGold() {
-        Player currentPlayer = players.get(currentPlayerIndex);
 
-        if (currentPlayer.totalTokens() + 1 > 10) {
+    public MoveResult takeGold() {
+        Player player = getCurrentPlayer();
+
+        if (player.totalTokens() + 1 > 10) {
             return MoveResult.fail("You cannot take gold because you would exceed 10 tokens.");
         }
 
-        return giveGoldIfAvailable(currentPlayer);
-    } 
-
-
-    private MoveResult giveGoldIfAvailable(Player player) {
         if (tokenBank.get(TokenBank.GOLD) > 0) {
             tokenBank.remove(TokenBank.GOLD, 1);
             player.addTokens(TokenBank.GOLD, 1);
-            return MoveResult.success("Gold token taken");
+            return MoveResult.success(player.getName() + " took 1 gold token.");
         }
-        return MoveResult.fail("No more gold");
+
+        return MoveResult.fail("No more gold.");
     }
 
 
@@ -410,6 +420,18 @@ public class GameLogic {
             if (color.equals(c)) return true;
         }
         return false;
+    }
+
+
+    //cheater method
+    public MoveResult debugGrantBonus(String color, int amount) {
+        Player player = getCurrentPlayer();
+        color = color.toUpperCase();
+
+        player.addBonus(color, amount);
+        return MoveResult.success(
+            "Player " + (currentPlayerIndex + 1) + " got + " + amount + " " + color + " bonus."
+        );
     }
 
 

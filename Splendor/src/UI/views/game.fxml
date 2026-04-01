@@ -183,6 +183,7 @@
 
                 <Button fx:id="viewReservedButton" text="View Reserved (0)" onAction="#handleViewReserved" prefWidth="180"/>
                 <Button fx:id="viewBoughtButton" text="View Bought (0)" onAction="#handleViewBought" prefWidth="180"/>
+                <Button fx:id="viewNobleButton" text="View Noble (0)" onAction="#handleViewNoble" prefWidth="180"/>
             </VBox>
         </StackPane>
 

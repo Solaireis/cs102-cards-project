@@ -17,6 +17,11 @@ import javafx.scene.layout.FlowPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.scene.layout.Region;
+import javafx.animation.RotateTransition;
+import javafx.animation.ScaleTransition;
+import javafx.animation.TranslateTransition;
+import javafx.util.Duration;
+import javafx.application.Platform;
 
 import java.net.URL;
 import java.util.ArrayList;
@@ -29,6 +34,11 @@ import UI.components.CardView;
 import Player.Player;
 import Test.GameLogic;
 import Test.MoveResult;
+import Cards.Noble.Noble;
+import Player.Computer;
+import Player.ComputerService;
+import javafx.animation.PauseTransition;
+
 
 public class Controller {
 
@@ -79,11 +89,13 @@ public class Controller {
     @FXML private Button reserveCardButton;
     @FXML private Button endTurnButton;
 
+    // Player Stats
     @FXML private Label pointsLabel;
     @FXML private VBox currentPlayerTokensBox;
 
     @FXML private Button viewReservedButton;
     @FXML private Button viewBoughtButton;
+    @FXML private Button viewNobleButton;
 
     // Board (4 rows of cards)
     @FXML private StackPane boardContainer;
@@ -94,7 +106,7 @@ public class Controller {
     @FXML private Label statusIcon;
 
 
-    // Back end!
+    // Back End
     private BoardView boardView;
     private GameLogic gameLogic;
     private enum ActionMode {
@@ -117,6 +129,9 @@ public class Controller {
     // Tracks if player has used their main action yet (view reserved or view bought not a main action)
     private boolean turnActionCommitted = false;
 
+    // Waiting for a winner!
+    private boolean winnerPopupShown = false;
+
 
     private static final double BASE_W = 1400;
     private static final double BASE_H = 900;
@@ -132,6 +147,7 @@ public class Controller {
 
     @FXML
     public void initialize() {
+
         // Cloud backgrounds
         loadBackgrounds();
         setupLayers();
@@ -140,6 +156,7 @@ public class Controller {
         // Load tokens
         loadTokenImages();
 
+        //load board
         boardView = new BoardView();
         boardContainer.getChildren().add(boardView);
 
@@ -147,6 +164,25 @@ public class Controller {
         boardView.setOnTopDeckClick(tier -> handleTopDeckClick(tier));
         boardView.setOnNobleClick(index -> handleNobleClick(index));
 
+        //cheater method
+        root.sceneProperty().addListener((obs, oldScene, newScene) -> {
+            if (newScene != null) {
+                newScene.setOnKeyPressed(e -> {
+                    if (gameLogic == null) return;
+                
+                    switch (e.getCode()) {
+                        case DIGIT1 -> updateStatus(gameLogic.debugGrantBonus(TokenBank.WHITE, 1));
+                        case DIGIT2 -> updateStatus(gameLogic.debugGrantBonus(TokenBank.BLUE, 1));
+                        case DIGIT3 -> updateStatus(gameLogic.debugGrantBonus(TokenBank.GREEN, 1));
+                        case DIGIT4 -> updateStatus(gameLogic.debugGrantBonus(TokenBank.RED, 1));
+                        case DIGIT5 -> updateStatus(gameLogic.debugGrantBonus(TokenBank.BLACK, 1));
+                        default -> { return; }
+                    }
+                
+                    refreshFromGameLogic();
+                });
+            }
+        });
     }
 
 
@@ -220,6 +256,8 @@ public class Controller {
         }
 
         refreshFromGameLogic();
+        maybeShowWinnerPopup();
+        maybeRunComputerTurn();
     }
 
 
@@ -272,19 +310,29 @@ public class Controller {
         finishReserveAction(result);
     }
     
-    private void handleNobleClick(int index) {
+    private void handleNobleClick(int boardIndex) {
         if (gameLogic == null) {
             return;
         }
-    
+
         if (!gameLogic.isWaitingForNobleChoice()) {
             updateStatus(MoveResult.fail("No noble choice is pending."));
             return;
         }
-    
-        MoveResult result = gameLogic.chooseNoble(index);
+
+        Noble clickedNoble = gameLogic.getNobleFaceUp().getFaceUp().get(boardIndex);
+        int pendingIndex = gameLogic.getPendingNobleChoices().indexOf(clickedNoble);
+
+        if (pendingIndex == -1) {
+            updateStatus(MoveResult.fail("Choose one of the eligible nobles."));
+            return;
+        }
+
+        MoveResult result = gameLogic.chooseNoble(pendingIndex);
         updateStatus(result);
         refreshFromGameLogic();
+        maybeShowWinnerPopup();
+        maybeRunComputerTurn();
     }
 
     private void handleReservedCardClick(int reserveIndex, Stage popupStage) {
@@ -345,6 +393,7 @@ public class Controller {
         pointsLabel.setText("Points: " + currentPlayer.getPoints());
         viewReservedButton.setText("View Reserved (" + currentPlayer.totalReserves() + ")");
         viewBoughtButton.setText("View Bought (" + currentPlayer.totalDevelopmentCards() + ")");
+        viewNobleButton.setText("View Noble (" + currentPlayer.totalNobles() + ")");
 
         updateCurrentPlayerTokensBox(currentPlayer);
         updateTokenBankCounts();
@@ -515,6 +564,224 @@ public class Controller {
         box.getChildren().add(idLabel);
 
         return box;
+    }
+
+    private void showNoblesPopup(String title, List<Noble> nobles) {
+        Stage popupStage = new Stage();
+        popupStage.initOwner(root.getScene().getWindow());
+        popupStage.initModality(Modality.APPLICATION_MODAL);
+        popupStage.setTitle(title);
+
+        FlowPane cardPane = new FlowPane();
+        cardPane.setHgap(16);
+        cardPane.setVgap(16);
+        cardPane.setPrefWrapLength(700);
+        cardPane.setAlignment(Pos.TOP_LEFT);
+        cardPane.setStyle("-fx-padding: 20; -fx-background-color: #1f2937;");
+
+        if (nobles == null || nobles.isEmpty()) {
+            Label emptyLabel = new Label("No noble cards to show.");
+            emptyLabel.setStyle("-fx-text-fill: white; -fx-font-size: 18px;");
+            cardPane.getChildren().add(emptyLabel);
+        } else {
+            for (Noble noble : nobles) {
+                cardPane.getChildren().add(createNoblePopupNode(noble));
+            }
+        }
+
+        ScrollPane scrollPane = new ScrollPane(cardPane);
+        scrollPane.setFitToWidth(true);
+        scrollPane.setStyle("-fx-background: #1f2937; -fx-background-color: #1f2937;");
+
+        Scene scene = new Scene(scrollPane, 800, 550);
+        popupStage.setScene(scene);
+        popupStage.show();
+    }
+
+    private VBox createNoblePopupNode(Noble noble) {
+        VBox box = new VBox(8);
+        box.setAlignment(Pos.CENTER);
+
+        String imagePath = "/UI/images/cards/nobleCards/" + noble.getID() + ".png";
+        CardView cardView = new CardView(noble.getID(), imagePath, 140, 140);
+        box.getChildren().add(cardView);
+
+        Label idLabel = new Label(noble.getID());
+        idLabel.setStyle("-fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold;");
+        box.getChildren().add(idLabel);
+
+        return box;
+    }
+
+    private void maybeShowWinnerPopup() {
+        if (winnerPopupShown || gameLogic == null || !gameLogic.isGameOver()) {
+            return;
+        }
+
+        winnerPopupShown = true;
+
+        List<Player> winners = gameLogic.determineWinners();
+        String winnerText;
+
+        if (winners.size() == 1) {
+            winnerText = winners.get(0).getName();
+        } else {
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < winners.size(); i++) {
+                if (i > 0) {
+                    sb.append(i == winners.size() - 1 ? " & " : ", ");
+                }
+                sb.append(winners.get(i).getName());
+            }
+            winnerText = sb.toString();
+        }
+
+        showWinnerPopup(winnerText);
+    }
+
+    private void showWinnerPopup(String winnerName) {
+        Stage popupStage = new Stage();
+        popupStage.initOwner(root.getScene().getWindow());
+        popupStage.initModality(Modality.APPLICATION_MODAL);
+        popupStage.setTitle("Winner!");
+
+        Label confettiLabel = new Label("<333333333");
+        confettiLabel.setStyle("-fx-font-size: 34px;");
+
+        Label yayLabel = new Label("YAYYYY");
+        yayLabel.setStyle(
+            "-fx-text-fill: #fff7b2;" +
+            "-fx-font-size: 42px;" +
+            "-fx-font-weight: bold;"
+        );
+
+        Label winnerLabel = new Label(winnerName + " HAS WON!");
+        winnerLabel.setStyle(
+            "-fx-text-fill: white;" +
+            "-fx-font-size: 28px;" +
+            "-fx-font-weight: bold;"
+        );
+
+        Label subLabel = new Label("Thanks for playing! :)");
+        subLabel.setStyle(
+            "-fx-text-fill: #fde68a;" +
+            "-fx-font-size: 18px;"
+        );
+
+        Button closeBtn = new Button("quit");
+        closeBtn.setOnAction(e -> Platform.exit());
+        closeBtn.setStyle(
+            "-fx-font-size: 16px;" +
+            "-fx-font-weight: bold;" +
+            "-fx-background-radius: 16;" +
+            "-fx-padding: 8 18 8 18;"
+        );
+
+        VBox popupBox = new VBox(16, confettiLabel, yayLabel, winnerLabel, subLabel, closeBtn);
+        popupBox.setAlignment(Pos.CENTER);
+        popupBox.setStyle(
+            "-fx-background-color: linear-gradient(to bottom, #6320ff, #ff4dd8);" +
+            "-fx-background-radius: 26;" +
+            "-fx-padding: 28;"
+        );
+        popupBox.setPrefWidth(430);
+
+        StackPane overlay = new StackPane(popupBox);
+        overlay.setAlignment(Pos.CENTER);
+        overlay.setStyle(
+            "-fx-background-color: rgba(15,23,42,0.72);" +
+            "-fx-padding: 24;"
+        );
+
+        Scene scene = new Scene(overlay, 700, 450);
+        popupStage.setScene(scene);
+
+        ScaleTransition bounce = new ScaleTransition(Duration.millis(700), yayLabel);
+        bounce.setFromX(0.7);
+        bounce.setFromY(0.7);
+        bounce.setToX(1.12);
+        bounce.setToY(1.12);
+        bounce.setAutoReverse(true);
+        bounce.setCycleCount(2);
+
+        RotateTransition wiggle = new RotateTransition(Duration.millis(160), winnerLabel);
+        wiggle.setByAngle(5);
+        wiggle.setAutoReverse(true);
+        wiggle.setCycleCount(6);
+
+        TranslateTransition floaty = new TranslateTransition(Duration.millis(700), confettiLabel);
+        floaty.setFromY(0);
+        floaty.setToY(-8);
+        floaty.setAutoReverse(true);
+        floaty.setCycleCount(4);
+
+        popupStage.show();
+
+        bounce.play();
+        wiggle.play();
+        floaty.play();
+    }
+
+    private void maybeRunComputerTurn() {
+        if (gameLogic == null || gameLogic.isGameOver()) {
+            return;
+        }
+
+        if (!(gameLogic.getCurrentPlayer() instanceof Computer)) {
+            return;
+        }
+
+        PauseTransition actionPause = new PauseTransition(Duration.millis(3000));
+        actionPause.setOnFinished(e -> {
+            MoveResult actionResult = ComputerService.performMainAction(gameLogic);
+            updateStatus(actionResult);
+            refreshFromGameLogic();
+
+            // if reserve succeeded and gold is available, let computer take gold after a short pause
+            if (gameLogic.getCurrentPlayer() instanceof Computer
+                    && currentMode == ActionMode.RESERVE_CARD
+                    && canTakeGoldAfterReserve) {
+
+                PauseTransition goldPause = new PauseTransition(Duration.millis(2000));
+                goldPause.setOnFinished(e2 -> {
+                    MoveResult goldResult = gameLogic.takeGold();
+                    updateStatus(goldResult);
+                    refreshFromGameLogic();
+                    runComputerEndTurn();
+                });
+                goldPause.play();
+            } else {
+                runComputerEndTurn();
+            }
+        });
+        updateStatus(MoveResult.success("Computer is thinking..."));
+        actionPause.play();
+    }
+
+    private void runComputerEndTurn() {
+        PauseTransition endPause = new PauseTransition(Duration.millis(2000));
+        endPause.setOnFinished(e -> {
+            MoveResult endResult = gameLogic.endTurn();
+            updateStatus(endResult);
+            refreshFromGameLogic();
+
+            if (gameLogic.isWaitingForNobleChoice()) {
+                PauseTransition noblePause = new PauseTransition(Duration.millis(2000));
+                noblePause.setOnFinished(e2 -> {
+                    MoveResult nobleResult = gameLogic.chooseNoble(0);
+                    updateStatus(nobleResult);
+                    refreshFromGameLogic();
+                    maybeShowWinnerPopup();
+                    maybeRunComputerTurn();
+                });
+                noblePause.play();
+                return;
+            }
+
+            maybeShowWinnerPopup();
+            maybeRunComputerTurn();
+        });
+        endPause.play();
     }
 
 
@@ -713,6 +980,16 @@ public class Controller {
         showCardsPopup("Bought Cards", currentPlayer.getBoughtCards(), false);
     }
 
+    @FXML
+    private void handleViewNoble() {
+        if (gameLogic == null) {
+            return;
+        }
+
+        Player currentPlayer = gameLogic.getCurrentPlayer();
+        showNoblesPopup("Noble Cards", currentPlayer.getPlayerNobles());
+    }
+
 
     private void handleTokenClick(String color) {
         if (turnActionCommitted) {
@@ -864,5 +1141,7 @@ public class Controller {
         }
         return false;
     }
+
+
 
 }

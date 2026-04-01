@@ -228,4 +228,14 @@ public class Player {
         return new ArrayList<>(playerDevelopmentCards);
     }
 
+
+// cheater mmethod for quick testing
+    public void addBonus(String color, int amount) {
+        if (!playerBonuses.containsKey(color)) {
+            throw new IllegalArgumentException("Invalid bonus color: " + color);
+        }
+
+        playerBonuses.put(color, playerBonuses.get(color) + amount);
+    }
+
 }

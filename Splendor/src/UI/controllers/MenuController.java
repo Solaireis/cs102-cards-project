@@ -227,6 +227,12 @@ public class MenuController {
             System.out.println("numOfPlayers from config = " + numOfPlayers);
             System.out.println("playerNames = " + playerNames);
             System.out.println("Winning Condition: " + winningCondition);
+            System.out.println("Quick Testing Hotfix");
+            System.out.println("1: White Bonus + 1");
+            System.out.println("2: Blue Bonus + 1");
+            System.out.println("3: Green Bonus + 1");
+            System.out.println("4: Red Bonus + 1");
+            System.out.println("5: Black Bonus + 1");
 
             GameLogic gameLogic = new GameLogic(playerNames, winningCondition);
 

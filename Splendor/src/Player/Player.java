@@ -98,10 +98,20 @@ public class Player {
         return sum;
     }
 
+    /**
+     * Adds tokens to player tokens based on color
+     * @param color color of token
+     * @param amount amount of tokens of that color taken by player
+     */
     public void addTokens(String color, int amount) {
         playerTokens.put(color, playerTokens.get(color) + amount);
     }
 
+    /**
+     * Remove tokens from player tokens based on color
+     * @param color color of tokens
+     * @param amount amount of tokens of that color used by player 
+     */
     public void removeTokens(String color, int amount) {
         int t = playerTokens.get(color);
 
@@ -112,6 +122,10 @@ public class Player {
         playerTokens.put(color, t - amount);
     }
 
+    /**
+     * Add development card to player development cards and bonus
+     * @param card DevelopementCard object to add
+     */
     public void addDevelopmentCard(DevelopmentCard card) {
         playerDevelopmentCards.add(card);
         playerPoints += card.getPoints();
@@ -121,39 +135,76 @@ public class Player {
         playerBonuses.put(bonusColor, playerBonuses.get(bonusColor) + 1);
     }
 
+    /**
+     * Returns total number of development cards owned by player (or total bonuses)
+     * @return total number of development cards owned by player
+     */
     public int totalDevelopmentCards() {
         return playerDevelopmentCards.size();
     }
 
+    /**
+     * Add noble object to player inventory when they qualify for a noble visit
+     * @param noble Noble object the player qualified for
+     */
     public void addNobles(Noble noble){
         playerNobles.add(noble);
         playerPoints += noble.getPoints();
     }
 
+    /**
+     * Returns an arrayList of noble objects owned by the player
+     * @return arrayList of noble objects owned by player
+     */
     public ArrayList<Noble> getPlayerNobles(){
         return new ArrayList<>(playerNobles);
     }
 
+    /**
+     * Returns the total number of nobles owned by player
+     * @return total number of nobles owned by player
+     */
     public int totalNobles() {
         return playerNobles.size();
     }
 
+    /**
+     * Returns a card in the reserve at a specific index
+     * @param index index of card within reserve
+     * @return DevelopmentCard object at the specific index within the reserve
+     */
     public DevelopmentCard getReserveCard(int index) {
         return playerReserves.get(index);
     }
 
+    /**
+     * Adds a DevelopmentCard object to the player reserve when they reserve a card
+     * @param card DevelopmentCard object reserved by player
+     */
     public void addReserve(DevelopmentCard card) {
         playerReserves.add(card);
     }
 
+    /**
+     * Removes DevelopmentCard object from player reserve when they decide to buy it
+     * @param card DevelopmentCard object within reserve the player wants to buy
+     */
     public void buyReserve(DevelopmentCard card) {
         playerReserves.remove(card);
     }
 
+    /**
+     * Returns the total number of cards within the player's reserve
+     * @return total number of cards within the player's reserve
+     */
     public int totalReserves() {
         return playerReserves.size();
     }
 
+    /**
+     * Returns a string containing the player's prestige points, token, bonuses, reserved cards, nobles, total tokens and total cards in reserve
+     * @return string containing the player's prestige points, token, bonuses, reserved cards, nobles, total tokens and total cards in reserve
+     */
     public void printStatus() {
         System.out.println("Player points = " + playerPoints + " | tokens = " + playerTokens 
         + " | bonuses = " + playerBonuses + " | reserves = " + playerReserves + " | nobles = " + playerNobles + " | totalTokens = " + totalTokens() + " | totalReserves = " + totalReserves());

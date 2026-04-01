@@ -133,7 +133,8 @@
                 <Label fx:id="actionStatusLabel" text="Choose an action"
                        style="-fx-text-fill: white; -fx-font-size: 16;"/>
 
-                <Button fx:id="takeTokensButton" text="Take Tokens" onAction="#handleTakeTokens" prefWidth="180"/>
+                <Button fx:id="takeThreeTokensButton" text="Take 3 Tokens" onAction="#handleTakeThreeTokens" prefWidth="180"/>
+                <Button fx:id="takeTwoTokensButton" text="Take 2 Same Tokens" onAction="#handleTakeTwoSameTokens" prefWidth="180"/>
                 <Button fx:id="buyCardButton" text="Buy Card" onAction="#handleBuyCard" prefWidth="180"/>
                 <Button fx:id="reserveCardButton" text="Reserve Card" onAction="#handleReserveCard" prefWidth="180"/>
                 <Button fx:id="endTurnButton" text="End Turn" onAction="#handleEndTurn" prefWidth="180"/>

@@ -344,28 +344,6 @@ public class GameLogic {
         return true;
     }
 
-    public MoveResult takeGold() {
-        Player currentPlayer = players.get(currentPlayerIndex);
-        return giveGoldIfAvailable(currentPlayer);
-    }
-
-
-    private MoveResult giveGoldIfAvailable(Player player) {
-        if (tokenBank.get(TokenBank.GOLD) > 0) {
-            tokenBank.remove(TokenBank.GOLD, 1);
-            player.addTokens(TokenBank.GOLD, 1);
-            return MoveResult.success("Gold token taken");
-        }
-        return MoveResult.fail("No More Gold");
-    }
-
-    private boolean isTakeColor(String c) {
-        for (String color : TAKE_COLORS) {
-            if (color.equals(c)) return true;
-        }
-        return false;
-    }
-
     public MoveResult chooseNoble(int index) {
         if (!waitingForNobleChoice) {
             return MoveResult.fail("No noble choice is pending.");
@@ -404,4 +382,36 @@ public class GameLogic {
         currentPlayerIndex = (currentPlayerIndex + 1) % players.size();
         return MoveResult.success("Turn ended.");
     }
+
+    public MoveResult takeGold() {
+        Player currentPlayer = players.get(currentPlayerIndex);
+
+        if (currentPlayer.totalTokens() + 1 > 10) {
+            return MoveResult.fail("You cannot take gold because you would exceed 10 tokens.");
+        }
+
+        return giveGoldIfAvailable(currentPlayer);
+    } 
+
+
+    private MoveResult giveGoldIfAvailable(Player player) {
+        if (tokenBank.get(TokenBank.GOLD) > 0) {
+            tokenBank.remove(TokenBank.GOLD, 1);
+            player.addTokens(TokenBank.GOLD, 1);
+            return MoveResult.success("Gold token taken");
+        }
+        return MoveResult.fail("No more gold");
+    }
+
+
+
+    private boolean isTakeColor(String c) {
+        for (String color : TAKE_COLORS) {
+            if (color.equals(c)) return true;
+        }
+        return false;
+    }
+
+
+
 }

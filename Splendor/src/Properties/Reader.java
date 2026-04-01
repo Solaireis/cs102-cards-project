@@ -1,6 +1,8 @@
 package Properties;
 
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Properties;
 
 /**
@@ -19,11 +21,23 @@ public class Reader {
      * @throws Exception if config.properties file not found in classpath
      */
     public Reader() throws Exception {
-        InputStream in = getClass().getClassLoader().getResourceAsStream("Properties/config.properties");
-        if (in == null) {
-            throw new Exception("config.properties not found in classpath");
+        Path rootConfig = Path.of("config.properties");
+
+        if (Files.exists(rootConfig)) {
+            try (InputStream in = Files.newInputStream(rootConfig)) {
+                configProps.load(in);
+                System.out.println("Loaded config from project root: " + rootConfig.toAbsolutePath());
+                return;
+            }
         }
-        configProps.load(in);
+
+        try (InputStream in = getClass().getClassLoader().getResourceAsStream("Properties/config.properties")) {
+            if (in == null) {
+                throw new Exception("config.properties not found in project root or classpath");
+            }
+            configProps.load(in);
+            System.out.println("Loaded config from classpath: Properties/config.properties");
+        }
     }
 
 

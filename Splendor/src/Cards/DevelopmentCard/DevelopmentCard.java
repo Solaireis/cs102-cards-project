@@ -7,6 +7,7 @@ import Cards.AbstractCard.AbstractCard;
 */
 public class DevelopmentCard extends AbstractCard {
     private String color;     // color of the bonus token
+    private int level;        // tier level of card
 
     /**
      * Initializes a development card's color, prestige points, cost and id
@@ -32,6 +33,21 @@ public class DevelopmentCard extends AbstractCard {
      */
     public String getBonus(){ 
         return color; 
+    }
+
+    /**
+     * Returns the tier level the development card
+     * @return tier level
+     */
+    public int getLevel(){ 
+        return level; 
+    }
+
+    /**
+     * Sets the tier level of the development card
+     */
+    public void setLevel(int level){ 
+        this.level = level;
     }
     
     /**

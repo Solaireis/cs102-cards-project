@@ -176,7 +176,7 @@ public class GameLogic {
             PurchaseService.buy(player, chosen, tokenBank);
             developmentFaceUp.removeAndRefill(level, index, developmentDeck);
 
-            return MoveResult.success("Bought card: " + chosen);
+            return MoveResult.success("Player " + (currentPlayerIndex + 1) + " bought card: " + chosen);
         } catch (Exception e) {
             return MoveResult.fail("Buy failed: " + e.getMessage());
         }
@@ -199,7 +199,7 @@ public class GameLogic {
             PurchaseService.buy(player, chosen, tokenBank);
             player.buyReserve(chosen);
 
-            return MoveResult.success("Bought reserved card: " + chosen);
+            return MoveResult.success("Player " + (currentPlayerIndex + 1) + " bought card: " + chosen);
         } catch (Exception e) {
             return MoveResult.fail("Buy failed: " + e.getMessage());
         }

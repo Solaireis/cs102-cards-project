@@ -65,47 +65,83 @@
             </padding>
 
             <children>
-                <Button fx:id="goldBtn" onAction="#onGoldTokenClick"
-                        style="-fx-background-color: transparent; -fx-padding: 0;">
-                    <graphic>
-                        <ImageView fx:id="goldTokenView" fitWidth="72.0" fitHeight="72.0" preserveRatio="true" />
-                    </graphic>
-                </Button>
+                <HBox spacing="8" alignment="CENTER_LEFT">
+                    <children>
+                        <Button fx:id="goldBtn" onAction="#onGoldTokenClick"
+                                style="-fx-background-color: transparent; -fx-padding: 0;">
+                            <graphic>
+                                <ImageView fx:id="goldTokenView" fitWidth="72.0" fitHeight="72.0" preserveRatio="true" />
+                            </graphic>
+                        </Button>
+                        <Label fx:id="goldBankCountLabel" text="0"
+                               style="-fx-text-fill: white; -fx-font-size: 18; -fx-font-weight: bold; -fx-background-color: rgba(0,0,0,0.35); -fx-background-radius: 12; -fx-padding: 4 10 4 10;" />
+                    </children>
+                </HBox>
 
-                <Button fx:id="greenBtn" onAction="#onGreenTokenClick"
-                        style="-fx-background-color: transparent; -fx-padding: 0;">
-                    <graphic>
-                        <ImageView fx:id="greenTokenView" fitWidth="72.0" fitHeight="72.0" preserveRatio="true" />
-                    </graphic>
-                </Button>
+                <HBox spacing="8" alignment="CENTER_LEFT">
+                    <children>
+                        <Button fx:id="greenBtn" onAction="#onGreenTokenClick"
+                                style="-fx-background-color: transparent; -fx-padding: 0;">
+                            <graphic>
+                                <ImageView fx:id="greenTokenView" fitWidth="72.0" fitHeight="72.0" preserveRatio="true" />
+                            </graphic>
+                        </Button>
+                        <Label fx:id="greenBankCountLabel" text="0"
+                               style="-fx-text-fill: white; -fx-font-size: 18; -fx-font-weight: bold; -fx-background-color: rgba(0,0,0,0.35); -fx-background-radius: 12; -fx-padding: 4 10 4 10;" />
+                    </children>
+                </HBox>
 
-                <Button fx:id="whiteBtn" onAction="#onWhiteTokenClick"
-                        style="-fx-background-color: transparent; -fx-padding: 0;">
-                    <graphic>
-                        <ImageView fx:id="whiteTokenView" fitWidth="72.0" fitHeight="72.0" preserveRatio="true" />
-                    </graphic>
-                </Button>
+                <HBox spacing="8" alignment="CENTER_LEFT">
+                    <children>
+                        <Button fx:id="whiteBtn" onAction="#onWhiteTokenClick"
+                                style="-fx-background-color: transparent; -fx-padding: 0;">
+                            <graphic>
+                                <ImageView fx:id="whiteTokenView" fitWidth="72.0" fitHeight="72.0" preserveRatio="true" />
+                            </graphic>
+                        </Button>
+                        <Label fx:id="whiteBankCountLabel" text="0"
+                               style="-fx-text-fill: white; -fx-font-size: 18; -fx-font-weight: bold; -fx-background-color: rgba(0,0,0,0.35); -fx-background-radius: 12; -fx-padding: 4 10 4 10;" />
+                    </children>
+                </HBox>
 
-                <Button fx:id="blackBtn" onAction="#onBlackTokenClick"
-                        style="-fx-background-color: transparent; -fx-padding: 0;">
-                    <graphic>
-                        <ImageView fx:id="blackTokenView" fitWidth="72.0" fitHeight="72.0" preserveRatio="true" />
-                    </graphic>
-                </Button>
+                <HBox spacing="8" alignment="CENTER_LEFT">
+                    <children>
+                        <Button fx:id="blackBtn" onAction="#onBlackTokenClick"
+                                style="-fx-background-color: transparent; -fx-padding: 0;">
+                            <graphic>
+                                <ImageView fx:id="blackTokenView" fitWidth="72.0" fitHeight="72.0" preserveRatio="true" />
+                            </graphic>
+                        </Button>
+                        <Label fx:id="blackBankCountLabel" text="0"
+                               style="-fx-text-fill: white; -fx-font-size: 18; -fx-font-weight: bold; -fx-background-color: rgba(0,0,0,0.35); -fx-background-radius: 12; -fx-padding: 4 10 4 10;" />
+                    </children>
+                </HBox>
 
-                <Button fx:id="redBtn" onAction="#onRedTokenClick"
-                        style="-fx-background-color: transparent; -fx-padding: 0;">
-                    <graphic>
-                        <ImageView fx:id="redTokenView" fitWidth="72.0" fitHeight="72.0" preserveRatio="true" />
-                    </graphic>
-                </Button>
+                <HBox spacing="8" alignment="CENTER_LEFT">
+                    <children>
+                        <Button fx:id="redBtn" onAction="#onRedTokenClick"
+                                style="-fx-background-color: transparent; -fx-padding: 0;">
+                            <graphic>
+                                <ImageView fx:id="redTokenView" fitWidth="72.0" fitHeight="72.0" preserveRatio="true" />
+                            </graphic>
+                        </Button>
+                        <Label fx:id="redBankCountLabel" text="0"
+                               style="-fx-text-fill: white; -fx-font-size: 18; -fx-font-weight: bold; -fx-background-color: rgba(0,0,0,0.35); -fx-background-radius: 12; -fx-padding: 4 10 4 10;" />
+                    </children>
+                </HBox>
 
-                <Button fx:id="blueBtn" onAction="#onBlueTokenClick"
-                        style="-fx-background-color: transparent; -fx-padding: 0;">
-                    <graphic>
-                        <ImageView fx:id="blueTokenView" fitWidth="72.0" fitHeight="72.0" preserveRatio="true" />
-                    </graphic>
-                </Button>
+                <HBox spacing="8" alignment="CENTER_LEFT">
+                    <children>
+                        <Button fx:id="blueBtn" onAction="#onBlueTokenClick"
+                                style="-fx-background-color: transparent; -fx-padding: 0;">
+                            <graphic>
+                                <ImageView fx:id="blueTokenView" fitWidth="72.0" fitHeight="72.0" preserveRatio="true" />
+                            </graphic>
+                        </Button>
+                        <Label fx:id="blueBankCountLabel" text="0"
+                               style="-fx-text-fill: white; -fx-font-size: 18; -fx-font-weight: bold; -fx-background-color: rgba(0,0,0,0.35); -fx-background-radius: 12; -fx-padding: 4 10 4 10;" />
+                    </children>
+                </HBox>
             </children>
         </VBox>
 

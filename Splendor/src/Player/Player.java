@@ -210,4 +210,22 @@ public class Player {
         + " | bonuses = " + playerBonuses + " | reserves = " + playerReserves + " | nobles = " + playerNobles + " | totalTokens = " + totalTokens() + " | totalReserves = " + totalReserves());
     }
 
+
+// (Added)
+    /**
+     * Returns all reserve cards reserved by player
+     * @return Arraylist of DevelopmentCard objects reserved by the player
+     */
+    public ArrayList<DevelopmentCard> getReservedCards() {
+        return new ArrayList<>(playerReserves);
+    }
+
+    /**
+     * Returns all cards bought by player
+     * @return Arraylist of DevelopmentCard objects bought by the player
+     */
+    public ArrayList<DevelopmentCard> getBoughtCards() {
+        return new ArrayList<>(playerDevelopmentCards);
+    }
+
 }

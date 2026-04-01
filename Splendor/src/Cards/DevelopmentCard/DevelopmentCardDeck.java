@@ -44,9 +44,9 @@ public class DevelopmentCardDeck {
                 System.out.println("Cant find file");
         }
         // initialise the deck
-        initializeDeck(tier1DeckDir, level1Deck);
-        initializeDeck(tier2DeckDir, level2Deck);
-        initializeDeck(tier3DeckDir, level3Deck);
+        initializeDeck(tier1DeckDir, level1Deck, 1);
+        initializeDeck(tier2DeckDir, level2Deck, 2);
+        initializeDeck(tier3DeckDir, level3Deck, 3);
         
 
         Collections.shuffle(level1Deck);
@@ -113,8 +113,9 @@ public class DevelopmentCardDeck {
      * Reads from csv files and creates DevelopmentCard objects
      * @param fileName name of the csv file
      * @param deck list of development cards to store DevelopmentCard objects
+     * @param level tierlevel the development cards
      */
-    public static void initializeDeck(String fileName, List<DevelopmentCard> deck) {
+    public static void initializeDeck(String fileName, List<DevelopmentCard> deck, int level) {
         try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
             String line;
             br.readLine(); // skip header
@@ -132,6 +133,7 @@ public class DevelopmentCardDeck {
                 String id = values[7];                              // needed for later updating UI
 
                 DevelopmentCard card = new DevelopmentCard(color, points, blackCost, whiteCost, redCost, blueCost, greenCost, id);
+                card.setLevel(level);
                 deck.add(card);
             }
 

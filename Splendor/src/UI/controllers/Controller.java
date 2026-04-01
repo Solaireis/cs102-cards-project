@@ -10,14 +10,19 @@ import javafx.scene.layout.VBox;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
-
-// import java.util.ArrayList;
-// import java.util.List;
+import javafx.geometry.Pos;
+import javafx.scene.Scene;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.layout.FlowPane;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
 
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.List;
 
 import Cards.Token.TokenBank;
+import Cards.DevelopmentCard.DevelopmentCard;
 import UI.components.BoardView;
 import Player.Player;
 import Test.GameLogic;
@@ -54,6 +59,12 @@ public class Controller {
     @FXML private ImageView blackTokenView;
     @FXML private ImageView redTokenView;
     @FXML private ImageView blueTokenView;
+    @FXML private Label goldBankCountLabel;
+    @FXML private Label greenBankCountLabel;
+    @FXML private Label whiteBankCountLabel;
+    @FXML private Label blackBankCountLabel;
+    @FXML private Label redBankCountLabel;
+    @FXML private Label blueBankCountLabel;
 
     // Options Menu Label
     @FXML private Label currentPlayerLabel;
@@ -99,9 +110,10 @@ public class Controller {
     private final ArrayList<String> selectedTokenColors = new ArrayList<>();
 
     // Tracks if player has successfully reserved a card this turn yet
-    private boolean canTakeGoldAfterReserve = false;                        
-
-
+    private boolean canTakeGoldAfterReserve = false;
+    
+    // Tracks if player has used their main action yet (view reserved or view bought not a main action)
+    private boolean turnActionCommitted = false;
 
 
     private static final double BASE_W = 1400;
@@ -135,8 +147,91 @@ public class Controller {
 
     }
 
+
+/* ------------------------------------ Main Actions ------------------------------------ */
+
+    @FXML
+    private void handleBuyCard() {
+        if (isTurnLockedForNewAction()) {
+            return;
+        }
+
+        currentMode = ActionMode.BUY_CARD;
+        resetTokenActionMode();
+        canTakeGoldAfterReserve = false;
+        updateStatus(MoveResult.success("Click a face-up or reserved card to buy it"));
+    }
+
+    @FXML
+    private void handleReserveCard() {
+        if (isTurnLockedForNewAction()) {
+            return;
+        }
+
+        currentMode = ActionMode.RESERVE_CARD;
+        resetTokenActionMode();
+        canTakeGoldAfterReserve = false;
+        updateStatus(MoveResult.success("Click a face-up/top-deck card to reserve it, then take a gold coin"));
+    }
+
+    @FXML
+    private void handleTakeThreeTokens() {
+        if (isTurnLockedForNewAction()) {
+            return;
+        }
+
+        currentMode = ActionMode.TAKE_TOKENS;
+        canTakeGoldAfterReserve = false;
+        clearSelectedTokenColors();
+        tokenActionMode = TokenActionMode.TAKE_THREE;
+        updateStatus(MoveResult.success("Choose 3 different token colors."));
+    }
+    
+    @FXML
+    private void handleTakeTwoSameTokens() {
+        if (isTurnLockedForNewAction()) {
+            return;
+        }
+
+        currentMode = ActionMode.TAKE_TOKENS;
+        canTakeGoldAfterReserve = false;
+        clearSelectedTokenColors();
+        tokenActionMode = TokenActionMode.TAKE_TWO_SAME;
+        updateStatus(MoveResult.success("Choose 1 color to take 2 of."));
+    }
+
+    @FXML
+    private void handleEndTurn() {
+        if (gameLogic == null) {
+            return;
+        }
+
+        currentMode = ActionMode.NONE;
+        resetTokenActionMode();
+        canTakeGoldAfterReserve = false;
+
+        MoveResult result = gameLogic.endTurn();
+        updateStatus(result);
+        actionStatusLabel.setText(result.getMessage());
+
+        if (didTurnActuallyEnd(result)) {
+            turnActionCommitted = false;
+        }
+
+        refreshFromGameLogic();
+    }
+
+
+
+
+/* ------------------------------------ Main Action Helpers ------------------------------------ */
     private void handleFaceUpCardClick(int tier, int index) {
         if (gameLogic == null) {
+            return;
+        }
+
+        if (turnActionCommitted) {
+            updateStatus(MoveResult.fail("You already used your turn action. Press End Turn."));
             return;
         }
     
@@ -155,11 +250,15 @@ public class Controller {
                 actionStatusLabel.setText("Choose Buy Card or Reserve Card first.");
                 return;
         }
-
     }
     
     private void handleTopDeckClick(int tier) {
         if (gameLogic == null) {
+            return;
+        }
+
+        if (turnActionCommitted) {
+            updateStatus(MoveResult.fail("You already used your turn action. Press End Turn."));
             return;
         }
     
@@ -188,24 +287,12 @@ public class Controller {
         refreshFromGameLogic();
     }
 
-    @FXML
-    private void handleTakeThreeTokens() {
-        currentMode = ActionMode.TAKE_TOKENS;
-        canTakeGoldAfterReserve = false;
-        clearSelectedTokenColors();
-        tokenActionMode = TokenActionMode.TAKE_THREE;
-        updateStatus(MoveResult.success("Choose 3 different token colors."));
-    }
-    
-    @FXML
-    private void handleTakeTwoSameTokens() {
-        currentMode = ActionMode.TAKE_TOKENS;
-        canTakeGoldAfterReserve = false;
-        clearSelectedTokenColors();
-        tokenActionMode = TokenActionMode.TAKE_TWO_SAME;
-        updateStatus(MoveResult.success("Choose 1 color to take 2 of."));
-    }
 
+
+    public void setGameLogic(GameLogic gameLogic) {
+        this.gameLogic = gameLogic;
+        refreshFromGameLogic();
+    }
 
     private void refreshBoardFromGameLogic() {
         if (gameLogic == null) {
@@ -218,44 +305,6 @@ public class Controller {
         boardView.loadTier3(gameLogic.getDevelopmentFaceUp().getFaceUp(3));
         boardView.clearSelection();
     }
-
-
-    public void setGameLogic(GameLogic gameLogic) {
-        this.gameLogic = gameLogic;
-        refreshFromGameLogic();
-    }
-
-    @FXML
-    private void handleBuyCard() {
-        currentMode = ActionMode.BUY_CARD;
-        resetTokenActionMode();
-        canTakeGoldAfterReserve = false;
-        updateStatus(MoveResult.success("Click a face-up or reserved card to buy it"));
-    }
-
-    @FXML
-    private void handleReserveCard() {
-        currentMode = ActionMode.RESERVE_CARD;
-        resetTokenActionMode();
-        canTakeGoldAfterReserve = false;
-        updateStatus(MoveResult.success("Click a face-up/top-deck card to reserve it, then take a gold coin"));
-    }
-
-    @FXML
-    private void handleEndTurn() {
-        if (gameLogic == null) {
-            return;
-        }
-
-        currentMode = ActionMode.NONE;
-        resetTokenActionMode();
-        canTakeGoldAfterReserve = false;
-
-        MoveResult result = gameLogic.endTurn();
-        updateStatus(result);
-        actionStatusLabel.setText(result.getMessage());
-        refreshFromGameLogic();
-    }    
 
     private void refreshFromGameLogic() {
         if (gameLogic == null) {
@@ -271,9 +320,18 @@ public class Controller {
         boughtCountLabel.setText("Bought: " + currentPlayer.totalDevelopmentCards());
 
         updateCurrentPlayerTokensBox(currentPlayer);
+        updateTokenBankCounts();
+        updateTokenButtonStates();
+        updateActionButtonStates();
         refreshBoardFromGameLogic();
     }
+
+    private boolean didTurnActuallyEnd(MoveResult result) {
+        return "Turn ended.".equals(result.getMessage())
+            || "Player reached winning condition.".equals(result.getMessage());
+    }
     
+/* ------------------------------------ Update Parts of UI Helper methods ------------------------------------ */
     private void updateCurrentPlayerTokensBox(Player player) {
         currentPlayerTokensBox.getChildren().clear();
 
@@ -295,9 +353,6 @@ public class Controller {
             white, blue, green, red, black, gold
         );
     }
-
-
-/* ----------Bottom Label Helper Method------------------------------------ */
 
     private void updateStatus(MoveResult result) {
         statusBarLabel.setText(result.getMessage());
@@ -330,8 +385,114 @@ public class Controller {
         );
     }
 
+    private void updateTokenBankCounts() {
+        if (gameLogic == null) {
+            return;
+        }
 
-/* ----------Setting Up Clouds------------------------------------ */
+        TokenBank bank = gameLogic.getTokenBank();
+
+        goldBankCountLabel.setText(String.valueOf(bank.get(TokenBank.GOLD)));
+        greenBankCountLabel.setText(String.valueOf(bank.get(TokenBank.GREEN)));
+        whiteBankCountLabel.setText(String.valueOf(bank.get(TokenBank.WHITE)));
+        blackBankCountLabel.setText(String.valueOf(bank.get(TokenBank.BLACK)));
+        redBankCountLabel.setText(String.valueOf(bank.get(TokenBank.RED)));
+        blueBankCountLabel.setText(String.valueOf(bank.get(TokenBank.BLUE)));
+    }
+
+    private void updateActionButtonStates() {
+        String enabledStyle = "";
+        String lockedStyle =
+            "-fx-opacity: 0.55;" +
+            "-fx-background-color: #999999;" +
+            "-fx-text-fill: #dddddd;";
+    
+        takeThreeTokensButton.setStyle(turnActionCommitted ? lockedStyle : enabledStyle);
+        takeTwoTokensButton.setStyle(turnActionCommitted ? lockedStyle : enabledStyle);
+        buyCardButton.setStyle(turnActionCommitted ? lockedStyle : enabledStyle);
+        reserveCardButton.setStyle(turnActionCommitted ? lockedStyle : enabledStyle);
+    }
+
+    private void updateTokenButtonStates() {
+        if (gameLogic == null) {
+            return;
+        }
+
+        TokenBank bank = gameLogic.getTokenBank();
+
+        greenBtn.setDisable(bank.get(TokenBank.GREEN) == 0);
+        whiteBtn.setDisable(bank.get(TokenBank.WHITE) == 0);
+        blackBtn.setDisable(bank.get(TokenBank.BLACK) == 0);
+        redBtn.setDisable(bank.get(TokenBank.RED) == 0);
+        blueBtn.setDisable(bank.get(TokenBank.BLUE) == 0);
+
+        goldBtn.setDisable(bank.get(TokenBank.GOLD) == 0);
+    }
+
+    private void showCardsPopup(String title, List<DevelopmentCard> cards) {
+        Stage popupStage = new Stage();
+        popupStage.initOwner(root.getScene().getWindow());
+        popupStage.initModality(Modality.APPLICATION_MODAL);
+        popupStage.setTitle(title);
+
+        FlowPane cardPane = new FlowPane();
+        cardPane.setHgap(16);
+        cardPane.setVgap(16);
+        cardPane.setPrefWrapLength(700);
+        cardPane.setAlignment(Pos.TOP_LEFT);
+        cardPane.setStyle("-fx-padding: 20; -fx-background-color: #1f2937;");
+
+        if (cards == null || cards.isEmpty()) {
+            Label emptyLabel = new Label("No cards to show.");
+            emptyLabel.setStyle("-fx-text-fill: white; -fx-font-size: 18px;");
+            cardPane.getChildren().add(emptyLabel);
+        } else {
+            for (DevelopmentCard card : cards) {
+                cardPane.getChildren().add(createCardPopupNode(card));
+            }
+        }
+
+        ScrollPane scrollPane = new ScrollPane(cardPane);
+        scrollPane.setFitToWidth(true);
+        scrollPane.setStyle("-fx-background: #1f2937; -fx-background-color: #1f2937;");
+
+        Scene scene = new Scene(scrollPane, 800, 550);
+        popupStage.setScene(scene);
+        popupStage.show();
+    }
+
+    private VBox createCardPopupNode(DevelopmentCard card) {
+        VBox box = new VBox(8);
+        box.setAlignment(Pos.CENTER);
+        String imagePath = "/UI/images/cards/devCards/tier" + card.getLevel() + "/" + card.getID() + ".png";
+        URL resource = getClass().getResource(imagePath);
+
+        if (resource != null) {
+            ImageView imageView = new ImageView(new Image(resource.toExternalForm()));
+            imageView.setFitWidth(140);
+            imageView.setFitHeight(200);
+            imageView.setPreserveRatio(true);
+            box.getChildren().add(imageView);
+        } else {
+            Label missingImage = new Label("Missing image:\n" + card.getID());
+            missingImage.setStyle(
+                "-fx-text-fill: white;" +
+                "-fx-background-color: rgba(255,255,255,0.12);" +
+                "-fx-padding: 12;" +
+                "-fx-alignment: center;"
+            );
+            box.getChildren().add(missingImage);
+        }
+
+        Label idLabel = new Label(card.getID());
+        idLabel.setStyle("-fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold;");
+        box.getChildren().add(idLabel);
+
+        return box;
+    }
+
+
+/* ------------------------------------ Setting Up Cloud Background ------------------------------------ */
 
     private void loadBackgrounds() {
         gameSky.setImage(loadBackgroundImage("gameSky.png"));
@@ -472,7 +633,7 @@ public class Controller {
     }
 
 
-/* ----------On Token Clicks------------------------------------ */
+/* ------------------------------------ On Token Clicks ------------------------------------ */
     @FXML
     private void onGoldTokenClick() {
         handleGoldTokenClick();
@@ -503,18 +664,46 @@ public class Controller {
         handleTokenClick(TokenBank.BLUE);
     }
 
+
+/* ------------------------------------ Unsorted LMFAO ------------------------------------ */
+
+    // @FXML
+    // private void handleViewReserved() {
+    //     System.out.println("view reserved clicked");
+    // }
+
+    // @FXML
+    // private void handleViewBought() {
+    //     System.out.println("view bought clicked");
+    // }
+
     @FXML
     private void handleViewReserved() {
-        System.out.println("view reserved clicked");
+        if (gameLogic == null) {
+            return;
+        }
+
+        Player currentPlayer = gameLogic.getCurrentPlayer();
+        showCardsPopup("Reserved Cards", currentPlayer.getReservedCards());
     }
 
     @FXML
     private void handleViewBought() {
-        System.out.println("view bought clicked");
+        if (gameLogic == null) {
+            return;
+        }
+
+        Player currentPlayer = gameLogic.getCurrentPlayer();
+        showCardsPopup("Bought Cards", currentPlayer.getBoughtCards());
     }
 
 
     private void handleTokenClick(String color) {
+        if (turnActionCommitted) {
+            updateStatus(MoveResult.fail("You already used your turn action. Press End Turn."));
+            return;
+        }
+
         if (gameLogic == null) {
             return;
         }
@@ -569,23 +758,12 @@ public class Controller {
             return;
         }
 
-        MoveResult endTurnResult = gameLogic.endTurn();
-        refreshFromGameLogic();
-
-        if (!endTurnResult.isSuccess()) {
-            resetTokenActionMode();
-            updateStatus(MoveResult.fail(result.getMessage() + " " + endTurnResult.getMessage()));
-            return;
-        }
-
         resetTokenActionMode();
         currentMode = ActionMode.NONE;
+        turnActionCommitted = true;
+        refreshFromGameLogic();
 
-        if (!"Turn ended.".equals(endTurnResult.getMessage())) {
-            updateStatus(endTurnResult);
-        } else {
-            updateStatus(result);
-        }
+        updateStatus(MoveResult.success(result.getMessage() + " Press End Turn when ready."));
     }
 
     private void clearSelectedTokenColors() {
@@ -604,41 +782,37 @@ public class Controller {
             return;
         }
 
-        MoveResult endTurnResult = gameLogic.endTurn();
-        refreshFromGameLogic();
-
-        if (!endTurnResult.isSuccess()) {
-            currentMode = ActionMode.NONE;
-            resetTokenActionMode();
-            updateStatus(endTurnResult);
-            return;
-        }
-
         currentMode = ActionMode.NONE;
         resetTokenActionMode();
+        turnActionCommitted = true;
+        refreshFromGameLogic();
 
-        if (!"Turn ended.".equals(endTurnResult.getMessage())) {
-            updateStatus(endTurnResult);
-        } else {
-            updateStatus(result);
-        }
+        updateStatus(MoveResult.success(result.getMessage() + " Press End Turn when ready."));
     }
 
     private void finishReserveAction(MoveResult result) {
-        refreshFromGameLogic();
-
         if (!result.isSuccess()) {
             canTakeGoldAfterReserve = false;
+            refreshFromGameLogic();
             updateStatus(result);
             return;
         }
 
+        turnActionCommitted = true;
+
         if (gameLogic.getTokenBank().get(TokenBank.GOLD) > 0) {
             canTakeGoldAfterReserve = true;
-            updateStatus(MoveResult.success(result.getMessage() + " Click gold to take 1 gold, or End Turn."));
+            refreshFromGameLogic();
+            updateStatus(MoveResult.success(
+                result.getMessage() + " Click gold to take 1 gold, or End Turn."
+            ));
         } else {
             canTakeGoldAfterReserve = false;
-            updateStatus(MoveResult.success(result.getMessage() + " No gold left in bank. Press End Turn."));
+            currentMode = ActionMode.NONE;
+            refreshFromGameLogic();
+            updateStatus(MoveResult.success(
+                result.getMessage() + " No gold left in bank. Press End Turn."
+            ));
         }
     }
 
@@ -653,29 +827,26 @@ public class Controller {
         }
 
         MoveResult result = gameLogic.takeGold();
-        refreshFromGameLogic();
 
         if (!result.isSuccess()) {
+            refreshFromGameLogic();
             updateStatus(result);
             return;
         }
 
         canTakeGoldAfterReserve = false;
         currentMode = ActionMode.NONE;
+        refreshFromGameLogic();
 
-        MoveResult endTurnResult = gameLogic.endTurn();
-
-        if (!endTurnResult.isSuccess()) {
-            updateStatus(MoveResult.fail(result.getMessage() + " " + endTurnResult.getMessage()));
-            return;
-        }
-
-        if (!"Turn ended.".equals(endTurnResult.getMessage())) {
-            updateStatus(endTurnResult);
-        } else {
-            updateStatus(result);
-        }
+        updateStatus(MoveResult.success(result.getMessage() + " Press End Turn when ready."));
     }
 
+    private boolean isTurnLockedForNewAction() {
+        if (turnActionCommitted) {
+            updateStatus(MoveResult.fail("You already used your turn action. Press End Turn."));
+            return true;
+        }
+        return false;
+    }
 
 }

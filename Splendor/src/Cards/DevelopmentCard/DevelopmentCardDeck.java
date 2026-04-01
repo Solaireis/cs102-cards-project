@@ -9,7 +9,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
+import Properties.*;
 public class DevelopmentCardDeck {
 
     // ArrayList to store the different card with different level.
@@ -26,9 +26,27 @@ public class DevelopmentCardDeck {
         level2Deck = new ArrayList<>();
         level3Deck = new ArrayList<>();
 
-        initializeDeck("src/Data/tier1.csv", level1Deck);
-        initializeDeck("src/Data/tier2.csv", level2Deck);
-        initializeDeck("src/Data/tier3.csv", level3Deck);
+        //placeholder variables for filepath
+        String tier1DeckDir = null;
+        String tier2DeckDir = null;
+        String tier3DeckDir = null;
+        
+        try{
+            Reader reader = new Reader(); // Create an instance of Reader
+            //calls for the config properties filepaths of the current cards
+            tier1DeckDir = reader.getTierDeck(1);
+            tier2DeckDir = reader.getTierDeck(2);
+            tier3DeckDir = reader.getTierDeck(3);
+            System.out.println("Deck Files found!");
+            // Call the method on the instance
+        } catch ( Exception e){
+                System.out.println("Cant find file");
+        }
+        // initialise the deck
+        initializeDeck(tier1DeckDir, level1Deck);
+        initializeDeck(tier2DeckDir, level2Deck);
+        initializeDeck(tier3DeckDir, level3Deck);
+        
 
         Collections.shuffle(level1Deck);
         Collections.shuffle(level2Deck);
@@ -44,9 +62,7 @@ public class DevelopmentCardDeck {
     //     initializeDeck("src/Data/tier3.csv", level3Deck);
 
     //     int numOfCards = 0;
-    //     String tier1DeckDir = null;
-    //     String tier2DeckDir = null;
-    //     String tier3DeckDir = null;
+        
 
 
     //     try{

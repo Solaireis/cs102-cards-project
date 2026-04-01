@@ -8,3 +8,4 @@
 mkdir -p classes
 javac -d classes -cp "src:lib/*" src/Test/Game.java
 cp config.properties classes/config.properties
+cp config.properties classes/Properties/config.properties

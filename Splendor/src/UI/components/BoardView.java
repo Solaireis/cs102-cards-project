@@ -21,8 +21,6 @@ public class BoardView extends VBox {
     private Consumer<Integer> onTopDeckClick;
     private Consumer<Integer> onNobleClick;
 
-    private CardView selectedCard;
-
     public BoardView() {
         setSpacing(25);
         setAlignment(Pos.CENTER);
@@ -47,19 +45,8 @@ public class BoardView extends VBox {
         this.onNobleClick = onNobleClick;
     }
 
-    private void selectCard(CardView cardView) {
-        if (selectedCard != null) {
-            selectedCard.setSelected(false);
-        }
-        selectedCard = cardView;
-        selectedCard.setSelected(true);
-    }
-
     public void clearSelection() {
-        if (selectedCard != null) {
-            selectedCard.setSelected(false);
-            selectedCard = null;
-        }
+        // selected border animation removed
     }
 
     public void loadNobles(List<Noble> nobles) {
@@ -74,7 +61,6 @@ public class BoardView extends VBox {
             final int nobleIndex = i;
 
             cardView.setOnMouseClicked(e -> {
-                selectCard(cardView);
                 if (onNobleClick != null) {
                     onNobleClick.accept(nobleIndex);
                 }
@@ -101,7 +87,6 @@ public class BoardView extends VBox {
 
         CardView deckBack = new CardView("tier" + tier + "_deck", backPath, 140, 196);
         deckBack.setOnMouseClicked(e -> {
-            selectCard(deckBack);
             if (onTopDeckClick != null) {
                 onTopDeckClick.accept(tier);
             }
@@ -117,7 +102,6 @@ public class BoardView extends VBox {
             final int cardIndex = i;
 
             cardView.setOnMouseClicked(e -> {
-                selectCard(cardView);
                 if (onFaceUpCardClick != null) {
                     onFaceUpCardClick.accept(tier, cardIndex);
                 }

@@ -16,6 +16,7 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.FlowPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.scene.layout.Region;
 
 import java.net.URL;
 import java.util.ArrayList;
@@ -24,6 +25,7 @@ import java.util.List;
 import Cards.Token.TokenBank;
 import Cards.DevelopmentCard.DevelopmentCard;
 import UI.components.BoardView;
+import UI.components.CardView;
 import Player.Player;
 import Test.GameLogic;
 import Test.MoveResult;
@@ -69,7 +71,6 @@ public class Controller {
     // Options Menu Label
     @FXML private Label currentPlayerLabel;
     @FXML private Label turnLabel;
-    @FXML private Label actionStatusLabel;
 
     // 5 Choices Buttons
     @FXML private Button takeThreeTokensButton;
@@ -79,9 +80,10 @@ public class Controller {
     @FXML private Button endTurnButton;
 
     @FXML private Label pointsLabel;
-    @FXML private Label reservedCountLabel;
-    @FXML private Label boughtCountLabel;
     @FXML private VBox currentPlayerTokensBox;
+
+    @FXML private Button viewReservedButton;
+    @FXML private Button viewBoughtButton;
 
     // Board (4 rows of cards)
     @FXML private StackPane boardContainer;
@@ -212,7 +214,6 @@ public class Controller {
 
         MoveResult result = gameLogic.endTurn();
         updateStatus(result);
-        actionStatusLabel.setText(result.getMessage());
 
         if (didTurnActuallyEnd(result)) {
             turnActionCommitted = false;
@@ -247,7 +248,7 @@ public class Controller {
                 finishReserveAction(result);
                 break;
             default:
-                actionStatusLabel.setText("Choose Buy Card or Reserve Card first.");
+                updateStatus(MoveResult.fail("Choose Buy Card or Reserve Card first."));
                 return;
         }
     }
@@ -263,7 +264,7 @@ public class Controller {
         }
     
         if (currentMode != ActionMode.RESERVE_CARD) {
-            actionStatusLabel.setText("Choose Reserve Card first.");
+            updateStatus(MoveResult.fail("Choose Reserve Card first."));
             return;
         }
     
@@ -277,14 +278,40 @@ public class Controller {
         }
     
         if (!gameLogic.isWaitingForNobleChoice()) {
-            actionStatusLabel.setText("No noble choice is pending.");
+            updateStatus(MoveResult.fail("No noble choice is pending."));
             return;
         }
     
         MoveResult result = gameLogic.chooseNoble(index);
         updateStatus(result);
-        actionStatusLabel.setText(result.getMessage());
         refreshFromGameLogic();
+    }
+
+    private void handleReservedCardClick(int reserveIndex, Stage popupStage) {
+        if (gameLogic == null) {
+            return;
+        }
+
+        if (turnActionCommitted) {
+            updateStatus(MoveResult.fail("You already used your turn action. Press End Turn."));
+            return;
+        }
+
+        if (currentMode != ActionMode.BUY_CARD) {
+            updateStatus(MoveResult.fail("Click Buy Card first, then choose a reserved card."));
+            return;
+        }
+
+        MoveResult result = gameLogic.buyReservedCard(reserveIndex);
+
+        if (!result.isSuccess()) {
+            refreshFromGameLogic();
+            updateStatus(result);
+            return;
+        }
+
+        popupStage.close();
+        finishStandardAction(result);
     }
 
 
@@ -316,8 +343,8 @@ public class Controller {
         currentPlayerLabel.setText(currentPlayer.getName());
         turnLabel.setText("Turn: " + gameLogic.getTurnNumber());
         pointsLabel.setText("Points: " + currentPlayer.getPoints());
-        reservedCountLabel.setText("Reserved: " + currentPlayer.totalReserves());
-        boughtCountLabel.setText("Bought: " + currentPlayer.totalDevelopmentCards());
+        viewReservedButton.setText("View Reserved (" + currentPlayer.totalReserves() + ")");
+        viewBoughtButton.setText("View Bought (" + currentPlayer.totalDevelopmentCards() + ")");
 
         updateCurrentPlayerTokensBox(currentPlayer);
         updateTokenBankCounts();
@@ -332,26 +359,35 @@ public class Controller {
     }
     
 /* ------------------------------------ Update Parts of UI Helper methods ------------------------------------ */
+
+
     private void updateCurrentPlayerTokensBox(Player player) {
         currentPlayerTokensBox.getChildren().clear();
 
-        Label white = new Label("White: " + player.getTokens("WHITE"));
-        Label blue = new Label("Blue: " + player.getTokens("BLUE"));
-        Label green = new Label("Green: " + player.getTokens("GREEN"));
-        Label red = new Label("Red: " + player.getTokens("RED"));
-        Label black = new Label("Black: " + player.getTokens("BLACK"));
-        Label gold = new Label("Gold: " + player.getTokens("GOLD"));
-
-        white.setStyle("-fx-text-fill: white;");
-        blue.setStyle("-fx-text-fill: white;");
-        green.setStyle("-fx-text-fill: white;");
-        red.setStyle("-fx-text-fill: white;");
-        black.setStyle("-fx-text-fill: white;");
-        gold.setStyle("-fx-text-fill: white;");
-
         currentPlayerTokensBox.getChildren().addAll(
-            white, blue, green, red, black, gold
+            createTokenBonusRow("Gold", player.getTokens("GOLD"), 0),
+            createTokenBonusRow("Green", player.getTokens("GREEN"), player.getBonus("GREEN")),
+            createTokenBonusRow("White", player.getTokens("WHITE"), player.getBonus("WHITE")),
+            createTokenBonusRow("Black", player.getTokens("BLACK"), player.getBonus("BLACK")),
+            createTokenBonusRow("Red", player.getTokens("RED"), player.getBonus("RED")),
+            createTokenBonusRow("Blue", player.getTokens("BLUE"), player.getBonus("BLUE"))
         );
+    }
+
+    private HBox createTokenBonusRow(String colorName, int tokenCount, int bonusCount) {
+        Label leftLabel = new Label(colorName + ": " + tokenCount);
+        leftLabel.setStyle("-fx-text-fill: white;");
+
+        Label rightLabel = new Label("(+" + bonusCount + ")");
+        rightLabel.setStyle("-fx-text-fill: #cbd5e1; -fx-font-weight: bold;");
+
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, javafx.scene.layout.Priority.ALWAYS);
+
+        HBox row = new HBox(8);
+        row.getChildren().addAll(leftLabel, spacer, rightLabel);
+
+        return row;
     }
 
     private void updateStatus(MoveResult result) {
@@ -429,7 +465,7 @@ public class Controller {
         goldBtn.setDisable(bank.get(TokenBank.GOLD) == 0);
     }
 
-    private void showCardsPopup(String title, List<DevelopmentCard> cards) {
+    private void showCardsPopup(String title, List<DevelopmentCard> cards, boolean reservedPopup) {
         Stage popupStage = new Stage();
         popupStage.initOwner(root.getScene().getWindow());
         popupStage.initModality(Modality.APPLICATION_MODAL);
@@ -447,8 +483,8 @@ public class Controller {
             emptyLabel.setStyle("-fx-text-fill: white; -fx-font-size: 18px;");
             cardPane.getChildren().add(emptyLabel);
         } else {
-            for (DevelopmentCard card : cards) {
-                cardPane.getChildren().add(createCardPopupNode(card));
+            for (int i = 0; i < cards.size(); i++) {
+                cardPane.getChildren().add(createCardPopupNode(cards.get(i), i, popupStage, reservedPopup));
             }
         }
 
@@ -461,27 +497,17 @@ public class Controller {
         popupStage.show();
     }
 
-    private VBox createCardPopupNode(DevelopmentCard card) {
+    private VBox createCardPopupNode(DevelopmentCard card, int reserveIndex, Stage popupStage, boolean reservedPopup) {
         VBox box = new VBox(8);
         box.setAlignment(Pos.CENTER);
-        String imagePath = "/UI/images/cards/devCards/tier" + card.getLevel() + "/" + card.getID() + ".png";
-        URL resource = getClass().getResource(imagePath);
 
-        if (resource != null) {
-            ImageView imageView = new ImageView(new Image(resource.toExternalForm()));
-            imageView.setFitWidth(140);
-            imageView.setFitHeight(200);
-            imageView.setPreserveRatio(true);
-            box.getChildren().add(imageView);
-        } else {
-            Label missingImage = new Label("Missing image:\n" + card.getID());
-            missingImage.setStyle(
-                "-fx-text-fill: white;" +
-                "-fx-background-color: rgba(255,255,255,0.12);" +
-                "-fx-padding: 12;" +
-                "-fx-alignment: center;"
-            );
-            box.getChildren().add(missingImage);
+        String imagePath = "/UI/images/cards/devCards/tier" + card.getLevel() + "/" + card.getID() + ".png";
+
+        CardView cardView = new CardView(card.getID(), imagePath, 140, 200);
+        box.getChildren().add(cardView);
+
+        if (reservedPopup) {
+            cardView.setOnMouseClicked(e -> handleReservedCardClick(reserveIndex, popupStage));
         }
 
         Label idLabel = new Label(card.getID());
@@ -667,16 +693,6 @@ public class Controller {
 
 /* ------------------------------------ Unsorted LMFAO ------------------------------------ */
 
-    // @FXML
-    // private void handleViewReserved() {
-    //     System.out.println("view reserved clicked");
-    // }
-
-    // @FXML
-    // private void handleViewBought() {
-    //     System.out.println("view bought clicked");
-    // }
-
     @FXML
     private void handleViewReserved() {
         if (gameLogic == null) {
@@ -684,7 +700,7 @@ public class Controller {
         }
 
         Player currentPlayer = gameLogic.getCurrentPlayer();
-        showCardsPopup("Reserved Cards", currentPlayer.getReservedCards());
+        showCardsPopup("Reserved Cards", currentPlayer.getReservedCards(), true);
     }
 
     @FXML
@@ -694,7 +710,7 @@ public class Controller {
         }
 
         Player currentPlayer = gameLogic.getCurrentPlayer();
-        showCardsPopup("Bought Cards", currentPlayer.getBoughtCards());
+        showCardsPopup("Bought Cards", currentPlayer.getBoughtCards(), false);
     }
 
 

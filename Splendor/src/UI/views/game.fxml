@@ -166,8 +166,6 @@
                        style="-fx-text-fill: white; -fx-font-size: 26; -fx-font-weight: bold;"/>
                 <Label fx:id="turnLabel" text="Turn 1"
                        style="-fx-text-fill: white; -fx-font-size: 20;"/>
-                <Label fx:id="actionStatusLabel" text="Choose an action"
-                       style="-fx-text-fill: white; -fx-font-size: 16;"/>
 
                 <Button fx:id="takeThreeTokensButton" text="Take 3 Tokens" onAction="#handleTakeThreeTokens" prefWidth="180"/>
                 <Button fx:id="takeTwoTokensButton" text="Take 2 Same Tokens" onAction="#handleTakeTwoSameTokens" prefWidth="180"/>
@@ -180,13 +178,11 @@
                 <Label text="Current Player Info"
                        style="-fx-text-fill: white; -fx-font-size: 18; -fx-font-weight: bold;"/>
                 <Label fx:id="pointsLabel" text="Points: 0" style="-fx-text-fill: white;"/>
-                <Label fx:id="reservedCountLabel" text="Reserved: 0" style="-fx-text-fill: white;"/>
-                <Label fx:id="boughtCountLabel" text="Bought: 0" style="-fx-text-fill: white;"/>
 
                 <VBox fx:id="currentPlayerTokensBox" spacing="6"/>
 
-                <Button text="View Reserved" onAction="#handleViewReserved" prefWidth="180"/>
-                <Button text="View Bought" onAction="#handleViewBought" prefWidth="180"/>
+                <Button fx:id="viewReservedButton" text="View Reserved (0)" onAction="#handleViewReserved" prefWidth="180"/>
+                <Button fx:id="viewBoughtButton" text="View Bought (0)" onAction="#handleViewBought" prefWidth="180"/>
             </VBox>
         </StackPane>
 

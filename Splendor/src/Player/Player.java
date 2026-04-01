@@ -1,6 +1,6 @@
-/*
-This player class store the information of a single player object
-A player has points, bonus owned, tokens owned, developmentCard owned, developmentCard reversed, noble owned
+/**
+ * This player class store the information of a single player object
+ * A player has points, bonus owned, tokens owned, developmentCard owned, developmentCard reversed, noble owned
 */
 package Player;
 
@@ -28,6 +28,10 @@ public class Player {
     private int playerPoints = 0;
     private String name;
 
+    /**
+     * Initialize the tokens, bonuses and name of player
+     * @param name Name of player
+     */
     public Player(String name){
         // start at 0 tokens
         playerTokens.put(TokenBank.WHITE, 0);
@@ -47,23 +51,44 @@ public class Player {
         this.name = name;
     }
     
+    /**
+     * Returns number of tokens of a specific color the player owns
+     * @param color color of token
+     * @return number of tokens of a specific color the player owns
+     */
     public int getTokens(String color){
         return playerTokens.get(color);
     }
 
+    /**
+     * Returns number of bonuses of a specific color the player has
+     * @param color color of bonus
+     * @return number of bonuses of the specific color
+     */
     public int getBonus(String color){
         return playerBonuses.get(color);
     }
 
+    /**
+     * Returns number of prestige points the player has
+     * @return number of prestige points the player has
+     */
     public int getPoints(){
         return playerPoints;
     }
 
+    /**
+     * Returns name of player
+     * @return name of player
+     */
     public String getName() {
         return name;
     }
 
-
+    /**
+     * Returns the total number of tokens owned by player
+     * @return total number of tokens owned by player
+     */
     public int totalTokens(){
         int sum = 0;
         for(int t : playerTokens.values()){

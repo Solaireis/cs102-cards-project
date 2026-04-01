@@ -135,7 +135,7 @@ public class Game {
                 System.out.println();
                 System.out.println();
                 System.out.println(player.getName().toUpperCase() + "'s turn");
-                turnDisplay(players, player, tb, nobleFaceUp, developmentFaceUp);
+                turnDisplay(players, player, tb, nobleDeck, nobleFaceUp, developmentFaceUp);
 
                 if (player instanceof Computer computer) {
                     boolean reached = computer.turnAlgorithm(tb, developmentFaceUp, developmentDesk, winningCondition,
@@ -145,6 +145,7 @@ public class Game {
                         finalRoundStarterIndex = i;
                     }
                 } else {
+                    turnDisplay(players, player, tb, nobleDeck, nobleFaceUp, developmentFaceUp);
                     boolean quit = false;
                     boolean valid = false;
                     while (!valid) {
@@ -273,28 +274,23 @@ public class Game {
         while (colors == null) {
             System.out.println("Enter 3 DIFFERENT colors (WHITE/BLUE/GREEN/RED/BLACK) separated by spaces:");
             System.out.print("> ");
-            colors = InputSafetyChecking.parseThreeColorsFlexibly(sc.nextLine(), TAKE_COLORS);
-            if (colors == null) {
-                System.out.println("Please enter valid colors.");
-            }
-        }
-        String a = colors.get(0);
-        String b = colors.get(1);
-        String c = colors.get(2);
+            String a = sc.next().toUpperCase();
+            String b = sc.next().toUpperCase();
+            String c = sc.next().toUpperCase();
 
         HashSet<String> set = new HashSet<>();
         set.add(a);
         set.add(b);
         set.add(c);
 
-        if (set.size() != 3) {
-            System.out.println("Must choose 3 different colors.");
-            return false;
-        }
-        if (a.equals(TokenBank.GOLD) || b.equals(TokenBank.GOLD) || c.equals(TokenBank.GOLD)) {
-            System.out.println("You cannot take GOLD using this action.");
-            return false;
-        }
+            if (set.size() != 3) {
+                System.out.println("Must choose 3 different colors.");
+                return false;
+            }
+            if (a.equals(TokenBank.GOLD) || b.equals(TokenBank.GOLD) || c.equals(TokenBank.GOLD)) {
+                System.out.println("You cannot take GOLD using this action.");
+                return false;
+            }
 
         for (String color : set) {
             String matched = InputSafetyChecking.matchColor(color, 0);
@@ -416,8 +412,8 @@ public class Game {
                 level = InputSafetyChecking.safeInt(sc, "Enter a number: ");
 
                 System.out.print("Choose card index: ");
-                index = InputSafetyChecking.safeInt(sc, "Enter a number: ");
-
+                index = safeInt(sc);
+                
                 chosen = developmentFaceUp.getCard(level, index);
             } catch (Exception e) {
                 System.out.println(e.getMessage());

@@ -5,6 +5,10 @@ import Player.Player;
 import java.util.ArrayList;
 import java.util.Collections;
 
+/**
+ * The NobleDeck class 
+ */
+
 public class NobleDeck {
 
     private ArrayList<Noble> nobles = new ArrayList<>();
@@ -65,6 +69,7 @@ public class NobleDeck {
         return nobles.isEmpty();
     }
 
+    //buggy! shouldn't get attractableNobles from total list of nobles, instead from noble face up
     // check if noble will be attracted by the player
     // Note there is possibility that player meet the qualification for multiple nobles at the same time
     // so the player should choose one and only one noble per round from all the eligible nobles

@@ -1,11 +1,11 @@
-/*
-This class stores all the token objects, and with the methods to arrange the token accordingly. 
-So whenever we want to edit the number of token we need to call the methods in this class only!
-*/
+/**
+ * The TokenBank class stores all the token objects on the board in a hashmap
+ */
+
 package Cards.Token;
 
-import java.util.HashMap;
 import Properties.*;
+import java.util.HashMap;
 
 public class TokenBank{
 
@@ -21,6 +21,11 @@ public class TokenBank{
     // List of tokens, which store the color of the token and the token object.
     private HashMap<String, Token> tokens;
 
+    /**
+     * Initializes the number of tokens of each color based on number of players
+     * If customTokenMode == 1 in config.properties, set number of tokens based on config.properties
+     * @param numOfPlayers number of players 
+     */
     public TokenBank(int numOfPlayers) {
 
         tokens = new HashMap<>();
@@ -90,20 +95,36 @@ public class TokenBank{
 
     // Getter, get the amount of the specific color token in the bank
     // get(color) is the method to get the token Object with the color we want
-    // getAmount() is the method in the token class to get the Amount of that token object.
+    // getAmount() is the method in the token class to get the Amount of that token object. 
     public int get(String color) {
         return tokens.get(color).getAmount();
     }
 
+    /**
+     * Adds tokens when tokens are returned to the tokenBank, increases the remaining amount of tokens
+     * @param color color of token
+     * @param amount amount returned to tokenBank
+     */
     public void add(String color, int amount) {
         tokens.get(color).add(amount);
     }
 
-    // helper function to check if there is enought tokens in the bank for player to take
+    /**
+     * Returns true if there are enough tokens in the tokenBank for player to take
+     * @param color color of token
+     * @param amount amount player wants to take
+     * @return true if enough tokens, false otherwise
+     */
     public boolean hasEnough(String color, int amount) {
         return get(color) >= amount;
     }
 
+    /**
+     * Removes tokens when user picks up tokens in their turn, decreases the remaining amount of tokens
+     * @param color color of token
+     * @param amount amount of tokens user wants to take
+     * @throws IllegalArgumentException if not enough remaining tokens
+     */
     public void remove(String color, int amount){
         if (!hasEnough(color, amount)) {
             throw new IllegalArgumentException(color + " Token in the bank is not enough");
@@ -111,6 +132,9 @@ public class TokenBank{
         tokens.get(color).remove(amount);
     }
 
+    /**
+     * Prints all the remaining amounts of each color token
+     */
     public void printBank() {
         System.out.println(tokens.values());
     }

@@ -4,7 +4,6 @@ import Cards.DevelopmentCard.*;
 import Cards.Noble.*;
 import Cards.Token.*;
 import Player.*;
-
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -239,7 +238,7 @@ public class GameLogic {
         }
 
         player.addReserve(chosen);
-        giveGoldIfAvailable(player);
+        //giveGoldIfAvailable(player);
 
         return MoveResult.success("Card reserved successfully.");
     }
@@ -255,7 +254,7 @@ public class GameLogic {
             DevelopmentCard chosen = developmentFaceUp.getCard(level, index);
             developmentFaceUp.removeAndRefill(level, index, developmentDeck);
             player.addReserve(chosen);
-            giveGoldIfAvailable(player);
+            //giveGoldIfAvailable(player);
 
             return MoveResult.success("Card reserved successfully.");
         } catch (Exception e) {
@@ -345,11 +344,19 @@ public class GameLogic {
         return true;
     }
 
-    private void giveGoldIfAvailable(Player player) {
+    public MoveResult takeGold() {
+        Player currentPlayer = players.get(currentPlayerIndex);
+        return giveGoldIfAvailable(currentPlayer);
+    }
+
+
+    private MoveResult giveGoldIfAvailable(Player player) {
         if (tokenBank.get(TokenBank.GOLD) > 0) {
             tokenBank.remove(TokenBank.GOLD, 1);
             player.addTokens(TokenBank.GOLD, 1);
+            return MoveResult.success("Gold token taken");
         }
+        return MoveResult.fail("No More Gold");
     }
 
     private boolean isTakeColor(String c) {

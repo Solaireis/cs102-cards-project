@@ -45,8 +45,33 @@ public class NobleFaceUP {
 
     public void printMarket() {
         System.out.println("=== Noble ===");
+        String[] colors = {"BLACK", "WHITE", "RED", "BLUE", "GREEN"};
+        String[][] matrix = new String[9][faceUp.size()];
+
         for (int i = 0; i < faceUp.size(); i++) {
-            System.out.println("[" + i + "] " + faceUp.get(i));
+            matrix[0][i] = "Index " + i;
+            matrix[1][i] = "--------------";
+            matrix[2][i] = String.format("| %dpt        |", faceUp.get(i).getPoints());
+            matrix[8][i] = "--------------";
+            int point = 7;
+            for (String color : colors) {
+                if (faceUp.get(i).getCost(color) != 0) {
+                    matrix[point][i] = String.format("| %-6s= %-3d|", color, faceUp.get(i).getCost(color));
+                    point -= 1;
+                }
+            }
+            while (point != 2) {
+                matrix[point][i] = "|            |";
+                point -= 1;
+            }
         }
+
+        for (String[] row : matrix) {
+            for (String val : row) {
+                System.out.printf("%-17s", val);
+            }
+            System.out.println();
+        }
+        
     }
 }

@@ -1,10 +1,13 @@
 package Player;
 
+import Cards.DevelopmentCard.*;
+import Cards.Noble.*;
+import Cards.Token.*;
 import java.util.*;
 
-import Cards.DevelopmentCard.*;
-import Cards.Token.*;
-import Cards.Noble.*;
+/**
+ * The Computer class contains the logic of the computer player
+ */
 
 public class Computer extends Player {
     List<String> randomizedTokenColors = Arrays.asList(Test.Game.TAKE_COLORS);

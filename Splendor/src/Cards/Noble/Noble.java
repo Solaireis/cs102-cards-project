@@ -1,6 +1,5 @@
-/*
-This Noble class stores the noble object, each noble object has points and
-cost for each card color.
+/**
+ * This Noble class stores the noble object, each noble object has points and cost for each card color.
 */
 package Cards.Noble;
 

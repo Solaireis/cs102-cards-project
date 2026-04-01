@@ -1,5 +1,9 @@
 package UI.controllers;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import Test.GameLogic;
 import javafx.animation.Animation;
 import javafx.animation.AnimationTimer;
 import javafx.animation.ScaleTransition;
@@ -183,9 +187,27 @@ public class MenuController {
     @FXML
     private void onPlay() {
         try {
-            Parent gameRoot = FXMLLoader.load(getClass().getResource("/UI/views/game.fxml"));
+            // Parent gameRoot = FXMLLoader.load(getClass().getResource("/UI/views/game.fxml"));
+            // Stage stage = (Stage) root.getScene().getWindow();
+            // stage.setScene(new Scene(gameRoot, BASE_W, BASE_H));
+
+            List<String> playerNames = new ArrayList<>();
+            playerNames.add("Player 1");
+            playerNames.add("Player 2");
+
+            int winningCondition = 15;
+            GameLogic gameLogic = new GameLogic(playerNames, winningCondition);
+
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/UI/views/game.fxml"));
+            Parent gameRoot = loader.load();
+
+            Controller gameController = loader.getController();
+            gameController.setGameLogic(gameLogic);
+
             Stage stage = (Stage) root.getScene().getWindow();
             stage.setScene(new Scene(gameRoot, BASE_W, BASE_H));
+            stage.show();
+
         } catch (Exception e) {
             e.printStackTrace();
         }

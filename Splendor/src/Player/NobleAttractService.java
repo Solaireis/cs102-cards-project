@@ -45,7 +45,7 @@ public class NobleAttractService {
             System.out.println(i + ": " + eligible.get(i));
         }
 
-        int idx = readIndex(sc, eligible.size()); // invoke the helper method, making sure that the play's input is valid.
+        int idx = readIndex(sc, eligible.size()); // invoke the helper method, making sure that the player's input is valid.
         return eligible.get(idx);
     }
 

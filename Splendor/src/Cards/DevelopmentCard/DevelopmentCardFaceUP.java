@@ -15,17 +15,17 @@ public class DevelopmentCardFaceUP {
 
     // Constructor to call the draw function in the development card desk class and put it into a arraylist with only 4 elements
     // which simulate the action of place the card from the deck to the table
-    public DevelopmentCardFaceUP(DevelopmentCardDeck desk){
+    public DevelopmentCardFaceUP(DevelopmentCardDeck deck){
         for (int i = 0; i < 4; i++) {
-            faceUp1.add(desk.drawLevel1());
-            faceUp2.add(desk.drawLevel2());
-            faceUp3.add(desk.drawLevel3());
+            faceUp1.add(deck.drawLevel1());
+            faceUp2.add(deck.drawLevel2());
+            faceUp3.add(deck.drawLevel3());
         }
     }
 
     // Helper function to get the group of face up card with the level we want
     // Is like we have 3 rows of card on the table and this is use to point which row we want
-    private ArrayList<DevelopmentCard> getFaceUp(int level) {
+    public ArrayList<DevelopmentCard> getFaceUp(int level) {
         if (level == 1){
             return faceUp1;
         }

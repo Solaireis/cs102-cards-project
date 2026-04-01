@@ -10,16 +10,15 @@ public class DevelopmentCard extends AbstractCard {
     private String color;     // color of the bonus token
 
     // Constructor to initialise all the information for individual card
-    public DevelopmentCard(String color, int points, int blackCost, int whiteCost, int redCost, int blueCost, int greenCost){
+    public DevelopmentCard(String color, int points, int blackCost, int whiteCost, int redCost, int blueCost, int greenCost, String id){
         
-        super(points, blackCost, whiteCost, redCost, blueCost, greenCost);
+        super(points, blackCost, whiteCost, redCost, blueCost, greenCost, id);
         this.color = color;
 
     }
 
     public String getBonus(){ 
         return color; 
-    
     }
     
     @Override

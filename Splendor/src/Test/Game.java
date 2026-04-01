@@ -13,27 +13,71 @@ public class Game {
             TokenBank.WHITE, TokenBank.BLUE, TokenBank.GREEN, TokenBank.RED, TokenBank.BLACK
     };
 
-  
+    public static void choiceMsg(){
+        System.out.println("\nChoose action:");
+        System.out.println("1) Take 3 different color tokens");
+        System.out.println("2) Take 2 same color tokens");
+        System.out.println("3) Buy a development card");
+        System.out.println("4) Reserve a development card");
+        System.out.println("5) Quit");
+        System.out.print("Your choice: ");
+    }
+    public static void playMsg(){
+        System.out.println(" ");
+        System.out.println("============================================================");
+        System.out.println("                     S P L E N D O R                        ");
+        System.out.println("------------------------------------------------------------");
+        System.out.println("        Trade   •   Build   •   Earn Prestige   •   Win     ");
+        System.out.println("============================================================");
+        System.out.println("                     G2T4 EDITION                           ");
+        System.out.println("============================================================");
+    }
+    public static void playVsPlayer(){
+        playMsg();
+        System.out.println("                Playing Against the local Player                ");
+        System.out.println("============================================================");
+    }
+    public static void playVsCom(){
+        playMsg();
+        System.out.println("                Playing Against the Computer                ");
+        System.out.println("============================================================");
+    }
+
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
 
         //need to change path of file that reader is reading from
         //no need number of players
-        int winningCondition = 15;  //default if loading error
-        try{
-            Reader reader = new Reader(); // Create an instance of Reader
-            winningCondition = reader.getPrestigePointToWin(); 
-            
-            // Call the method on the instance
-        } catch (Exception e){
-                System.out.println("Cant find file man");
-        }
-
-
+        int winningCondition = 0;  //default if loading error
+    
         ArrayList<Player> players = new ArrayList<>();
 
         //list of players
+        // numb of players is obtained from properties file
         int numOfPlayers = 0;
+        try{
+            Reader reader = new Reader(); // Create an instance of Reader
+            winningCondition = reader.getPrestigePointToWin(); 
+            numOfPlayers = reader.getNumOfPlayers();
+            //Test commands to verify if the properties file works
+            // System.out.println(winningCondition);
+            // System.out.println(numOfPlayers);
+            
+            System.out.println("Config.properties File found!");
+            System.out.println("Initializing Game configuration properties");
+            System.out.printf("Number of Prestige points to win: %d \n", winningCondition);
+            System.out.printf("Number of Players: %d \n ", numOfPlayers);
+
+            // Call the method on the instance
+        } catch ( Exception e){
+                System.out.println("Cant find file");
+        }
+        // If no config properties is found
+        if (winningCondition == 0){
+            winningCondition = 15;
+            System.out.println("File not found.. Default winning Condition set to 15");
+        }
+
         while (numOfPlayers == 0) {
             System.out.print("Enter number of players: ");
             numOfPlayers = sc.nextInt();
@@ -42,6 +86,10 @@ public class Game {
                 System.out.println("At least 1 player needed");
                 continue;
             }
+            
+        }
+
+        if (numOfPlayers > 0){
             for (int i = 1; i <= numOfPlayers; i++) {
                 System.out.printf("Player %d Name: ", i);
                 String name = sc.nextLine();
@@ -51,7 +99,13 @@ public class Game {
         }
         if (numOfPlayers < 2) {
             numOfPlayers += 1;
+
+            playVsCom();
             players.add(new Computer());
+        } else {
+            //Displays the Player v Player print screen instead
+            playVsPlayer();
+
         }
         
         
@@ -66,8 +120,7 @@ public class Game {
 
         boolean end = false;
         while (!end) {
-            for (Player player : players) {
-                
+            for (Player player : players) { 
                 System.out.println();
                 System.out.println();
                 System.out.println();
@@ -80,15 +133,22 @@ public class Game {
                     boolean quit = false;
                     boolean valid = false;
                     while (!valid) {
-                        System.out.println("\nChoose action:");
-                        System.out.println("1) Take 3 different color tokens");
-                        System.out.println("2) Take 2 same color tokens");
-                        System.out.println("3) Buy a development card");
-                        System.out.println("4) Reserve a development card");
-                        System.out.println("5) Quit");
-                        System.out.print("Your choice: ");
-                        String choice = sc.nextLine();
-                        //sc.nextLine();
+                        choiceMsg();
+                        
+                        int choice = 0;
+                        boolean choiceValid = false;
+                        while(!choiceValid){
+                            try {
+                                choice = sc.nextInt();
+                                choiceValid = true;
+                            } catch (InputMismatchException e){
+                                System.out.println("Input a number!");
+                                sc.nextLine(); // clear the invalid input
+                                choiceMsg();
+                            }
+                        }
+                        
+                        sc.nextLine();
 
                         switch (choice) {
                             default:

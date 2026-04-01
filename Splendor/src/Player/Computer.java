@@ -13,13 +13,24 @@ public class Computer extends Player {
         super("Computer");
     }
 
-    // returns end value
+    /**
+     * Executes the Computer's turn by doing these steps:
+     * 1. Looks for development cards it can buy
+     *      1a. Looks through reserve
+     *      1b. Looks through market
+     * 2. If cannot buy development cards, takes three random tokens
+     * 3. If cannot take three tokens, takes two tokens
+     * 4. If cannot take two tokens, reserve a development card
+     * 5. Ends the turn
+     * 6. If is eligible for a noble, takes a noble
+     * @param tb the token bank
+     * @param developmentFaceUp development cards currently face up on the table
+     * @param developmentDesk the current deck of development cards
+     * @param winningCondition amount of points needed to win
+     * @param NobleDeck nobles currently on the table
+     * @return a Boolean value indicating whether Computer has reached the winning condition or not
+     */
     public boolean turnAlgorithm(TokenBank tb, DevelopmentCardFaceUP developmentFaceUp, DevelopmentCardDeck developmentDesk, int winningCondition, NobleDeck nobleDeck) {
-        // current algorithm:
-        // 1. looks for development cards it can buy
-        // 2. if cannot buy development cards, take three random tokens
-        // 3. if cannot take three tokens, take two tokens
-        // 4. if cannot take two tokens, reserve
 
         boolean valid = false;
 
@@ -40,7 +51,7 @@ public class Computer extends Player {
 
         // step 4
         if (!valid) {
-            valid = reserveCard(tb, developmentFaceUp, developmentDesk);
+            valid = computerReserveCard(tb, developmentFaceUp, developmentDesk);
         }
 
         // end turn
@@ -54,6 +65,14 @@ public class Computer extends Player {
 
     //-----------------------------------------------------------------------------------------------------------------
 
+    /**
+     * Test.Game::buyCard, but adjusted for the Computer class.
+     * Iterates through each card in its reserve then in the market to find one it can afford.
+     * @param tb the token bank
+     * @param developmentFaceUp development cards currently face up on the table
+     * @param developmentDesk the current deck of development cards
+     * @return a Boolean value indicating whether Computer has successfully bought a card or not
+     */
     private boolean computerBuyCard(TokenBank tb, DevelopmentCardFaceUP developmentFaceUp, DevelopmentCardDeck developmentDesk) {
         DevelopmentCard currCard = null;
 
@@ -88,6 +107,12 @@ public class Computer extends Player {
         return false;
     }
 
+    /**
+     * Test.Game::takeThreeTokens, but adjusted for the Computer class.
+     * Takes three random tokens.
+     * @param tb the token bank
+     * @return a Boolean value indicating whether Computer has successfully taken three tokens or not
+     */
     private boolean computerTakeThreeTokens(TokenBank tb) {
         if (this.totalTokens() + 3 <= 10) {
             Collections.shuffle(randomizedTokenColors);
@@ -119,6 +144,12 @@ public class Computer extends Player {
         return false;
     }
 
+    /**
+     * Test.Game::takeTwoTokens, but adjusted for the Computer class.
+     * Takes two tokens of a random color.
+     * @param tb the token bank
+     * @return a Boolean value indicating whether Computer has successfully taken two tokens or not
+     */
     private boolean computerTakeTwoTokens(TokenBank tb) {
         if (this.totalTokens() + 2 <= 10) {
             Collections.shuffle(randomizedTokenColors);
@@ -143,7 +174,15 @@ public class Computer extends Player {
         return false;
     }
 
-    private boolean reserveCard(TokenBank tb, DevelopmentCardFaceUP developmentFaceUp, DevelopmentCardDeck developmentDesk) {
+    /**
+     * Test.Game::reserveCard, but adjusted for the Computer class.
+     * Tries to reserve the card in market level 1 index 0, then market level 2 index 0, then market level 3 index 0.
+     * @param tb the token bank
+     * @param developmentFaceUp development cards currently face up on the table
+     * @param developmentDesk the current deck of development cards
+     * @return a Boolean value indicating whether Computer has successfully reserved a card or not
+     */
+    private boolean computerReserveCard(TokenBank tb, DevelopmentCardFaceUP developmentFaceUp, DevelopmentCardDeck developmentDesk) {
         if (this.totalReserves() == 3) {
             return false;
         }
@@ -178,6 +217,12 @@ public class Computer extends Player {
 
     //-----------------------------------------------------------------------------------------------------------------
 
+    /**
+     * Test.Game::endTurn, but adjusted for the Computer class.
+     * @param tb the token bank
+     * @param winningCondition amount of points needed to win
+     * @return a Boolean value indicating whether Computer has reached the winning condition or not
+     */
     private boolean computerEndTurn(TokenBank tb, int winningCondition) {
         while (this.totalTokens() > 10) {
             // remove random token
@@ -199,6 +244,10 @@ public class Computer extends Player {
         return false;
     }
 
+    /**
+     * Test.Game::awardNobleIfAny, but adjusted for the Computer class.
+     * @param deck nobles currently on the table
+     */
     private void computerAwardNobleIfAny(NobleDeck deck) {
         ArrayList<Noble> eligible = deck.getAttractableNobles(this);
 

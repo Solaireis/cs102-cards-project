@@ -9,9 +9,9 @@ import Cards.AbstractCard.AbstractCard;
 public class Noble extends AbstractCard {
 
     // Constructor to initialise all the information for individual card
-    public Noble(int points, int blackCost, int whiteCost, int redCost, int blueCost, int greenCost){
+    public Noble(int points, int blackCost, int whiteCost, int redCost, int blueCost, int greenCost, String id){
 
-        super(points, blackCost, whiteCost, redCost, blueCost, greenCost);
+        super(points, blackCost, whiteCost, redCost, blueCost, greenCost, id);
 
     }
 
@@ -19,4 +19,5 @@ public class Noble extends AbstractCard {
     public String toString() {
         return super.toString();
     }
+
 }

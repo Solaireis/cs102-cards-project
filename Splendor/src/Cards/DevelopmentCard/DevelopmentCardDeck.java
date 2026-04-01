@@ -5,8 +5,14 @@ package Cards.DevelopmentCard;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.List;
 
 import Cards.Token.TokenBank;
+//import the properties reader class
+import Properties.*;
 
 public class DevelopmentCardDeck {
 
@@ -26,37 +32,117 @@ public class DevelopmentCardDeck {
 
     // Call the constructor in the DevelopementCard to initialise all the 90 cards
     private void initialiseCards() {
-        level1Deck.add(new DevelopmentCard(TokenBank.BLACK, 1, 0, 1, 1, 1, 1));
-        level1Deck.add(new DevelopmentCard(TokenBank.RED, 1, 0, 0, 1, 1, 1));
-        level1Deck.add(new DevelopmentCard(TokenBank.WHITE, 1, 1, 0, 1, 0, 1));
-        level1Deck.add(new DevelopmentCard(TokenBank.BLUE, 1, 0, 1, 1, 1, 1));
-        level1Deck.add(new DevelopmentCard(TokenBank.GREEN, 1, 0, 1, 1, 1, 1));
-        level1Deck.add(new DevelopmentCard(TokenBank.BLUE, 1, 0, 1, 1, 1, 1));
-        level1Deck.add(new DevelopmentCard(TokenBank.RED, 1, 0, 1, 1, 1, 1));
-        level1Deck.add(new DevelopmentCard(TokenBank.GREEN, 1, 0, 1, 1, 1, 1));
-        level1Deck.add(new DevelopmentCard(TokenBank.WHITE, 1, 0, 1, 1, 1, 1));
-        level1Deck.add(new DevelopmentCard(TokenBank.BLUE, 1, 3, 1, 1, 1, 1));
-        level2Deck.add(new DevelopmentCard(TokenBank.GREEN, 2, 0, 2, 0, 4, 0));
-        level2Deck.add(new DevelopmentCard(TokenBank.GREEN, 3, 0, 0, 0, 4, 0));
-        level2Deck.add(new DevelopmentCard(TokenBank.BLUE, 2, 0, 5, 0, 4, 0));
-        level2Deck.add(new DevelopmentCard(TokenBank.BLACK, 2, 2, 0, 0, 4, 0));
-        level2Deck.add(new DevelopmentCard(TokenBank.WHITE, 2, 0, 0, 3, 4, 0));
-        level2Deck.add(new DevelopmentCard(TokenBank.WHITE, 2, 0, 3, 0, 3, 1));
-        level2Deck.add(new DevelopmentCard(TokenBank.BLUE, 2, 0, 1, 0, 4, 0));
-        level2Deck.add(new DevelopmentCard(TokenBank.WHITE, 2, 6, 0, 0, 0, 0));
-        level2Deck.add(new DevelopmentCard(TokenBank.BLUE, 3, 3, 0, 3, 0, 3));
-        level3Deck.add(new DevelopmentCard(TokenBank.BLACK, 3, 2, 0, 0, 1, 0));
-        level3Deck.add(new DevelopmentCard(TokenBank.BLUE, 4, 6, 0, 0, 0, 0));
-        level3Deck.add(new DevelopmentCard(TokenBank.GREEN, 3, 6, 0, 0, 0, 0));
-        level3Deck.add(new DevelopmentCard(TokenBank.RED, 4, 2, 0, 0, 4, 0));
-        level3Deck.add(new DevelopmentCard(TokenBank.GREEN, 3, 6, 0, 0, 0, 0));
-        level3Deck.add(new DevelopmentCard(TokenBank.RED, 3, 6, 0, 0, 0, 0));
-        level3Deck.add(new DevelopmentCard(TokenBank.BLUE, 3, 2, 0, 3, 0, 0));
-        level3Deck.add(new DevelopmentCard(TokenBank.WHITE, 4, 3, 1, 1, 0, 0));
-        level3Deck.add(new DevelopmentCard(TokenBank.BLACK, 3, 3, 1, 2, 1, 1));
-        level3Deck.add(new DevelopmentCard(TokenBank.RED, 3, 2, 4, 0, 1, 3));
-        //....... 90 lines of code here to store all the cards if decide to hardcode LOL.......
+        initializeDeck("src/Data/tier1.csv", level1Deck);
+        initializeDeck("src/Data/tier2.csv", level2Deck);
+        initializeDeck("src/Data/tier3.csv", level3Deck);
+
+    //     int numOfCards = 0;
+    //     String tier1DeckDir = null;
+    //     String tier2DeckDir = null;
+    //     String tier3DeckDir = null;
+
+
+    //     try{
+    //         Reader reader = new Reader(); // Create an instance of Reader
+    //         numOfCards = reader.getNumOfCards();
+    //         tier1DeckDir = reader.getTierDeck(1);
+    //         tier2DeckDir = reader.getTierDeck(2);
+    //         tier3DeckDir = reader.getTierDeck(3);
+    //         System.out.println("Num of Cards properties  found!");
+    //         System.out.printf("Number of Cards Shuffled: %d \n", numOfCards);
+    //         // Call the method on the instance
+    //     } catch ( Exception e){
+    //             System.out.println("Cant find file");
+    //     }
+
+    //     //edge cases if properties is above 90
+    //     if (numOfCards < 60){
+    //         System.out.println("Num of Cards less than 60.. Setting to default 60");
+    //         numOfCards = 60;
+    //     }
+    //     //edge cases if properties is above 90
+    //     if (numOfCards > 90){
+    //         System.out.println("Num of Cards more than 90.. Setting to maximum 90");
+    //         numOfCards = 90; 
+    //     }
+    //    // run the cards development
+    //     if (numOfCards == 60){
+    //         initializeDeck(tier1DeckDir, level1Deck, 30);
+    //         initializeDeck(tier2DeckDir, level2Deck, 20);
+    //         initializeDeck(tier3DeckDir, level3Deck, 10);
+    //     } else if ( numOfCards > 80){
+    //         initializeDeck(tier1DeckDir, level1Deck, 40); 
+    //         initializeDeck(tier2DeckDir, level2Deck, 30);
+    //         initializeDeck(tier3DeckDir, level3Deck, numOfCards - 70);
+    //     } else if ( numOfCards > 70){
+    //         initializeDeck(tier1DeckDir, level1Deck, 40); 
+    //         initializeDeck(tier2DeckDir, level2Deck, numOfCards - 50);
+    //         initializeDeck(tier3DeckDir, level3Deck, 10); 
+    //     } else{ //likely the number of cards here would be between 60 - 70
+    //         initializeDeck(tier1DeckDir, level1Deck, numOfCards - 30); 
+    //         initializeDeck(tier2DeckDir, level2Deck, 20); 
+    //         initializeDeck(tier3DeckDir, level2Deck, 10); 
+    //     }
     }
+
+    // Helper method to initialize the deck
+    public static void initializeDeck(String fileName, List<DevelopmentCard> deck) {
+        try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
+            String line;
+            br.readLine(); // skip header
+
+            while ((line = br.readLine()) != null) {
+                String[] values = line.split(",");
+
+                String color = values[0];
+                int points = Integer.parseInt(values[1]);
+                int blackCost = Integer.parseInt(values[2]);
+                int whiteCost = Integer.parseInt(values[3]);
+                int redCost = Integer.parseInt(values[4]);
+                int blueCost = Integer.parseInt(values[5]);
+                int greenCost = Integer.parseInt(values[6]);
+                String id = values[7];                              // needed for later updating UI
+
+                DevelopmentCard card = new DevelopmentCard(color, points, blackCost, whiteCost, redCost, blueCost, greenCost, id);
+                deck.add(card);
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    //Current helper method
+    // public static void initializeDeck(String fileName, List<DevelopmentCard> deck, int NumOfCards) {
+    //     try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
+    //         int count = 0;
+    //         String line;
+    //         br.readLine(); // skip header
+
+    //         while ((line = br.readLine()) != null && count < NumOfCards) {
+    //             String[] values = line.split(",");
+
+    //             String color = values[0];
+    //             int points = Integer.parseInt(values[1]);
+    //             int blackCost = Integer.parseInt(values[2]);
+    //             int whiteCost = Integer.parseInt(values[3]);
+    //             int redCost = Integer.parseInt(values[4]);
+    //             int blueCost = Integer.parseInt(values[5]);
+    //             int greenCost = Integer.parseInt(values[6]);
+    //             String id = values[7];                              // needed for later updating UI
+
+    //             DevelopmentCard card = new DevelopmentCard(color, points, blackCost, whiteCost, redCost, blueCost, greenCost, id);
+    //             deck.add(card);
+    //             count++;
+    //             //test code to verify that indeed only the set number of cards can be initialised
+    //            // System.out.println(count);
+    //         }
+
+    //     } catch (IOException e) {
+    //         e.printStackTrace();
+    //     }
+    // }
+    
 
     // Method in the collection to automatically shuffle the order of the cards for every level.
     private void shuffleDesks() {
@@ -109,5 +195,6 @@ public class DevelopmentCardDeck {
     public int level3Size(){ 
         return level3Deck.size(); 
     }
+
 
 }

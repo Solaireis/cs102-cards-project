@@ -26,6 +26,10 @@ public class NobleFaceUP {
         }
     }
 
+    public ArrayList<Noble> getFaceUp() {
+        return faceUp;
+    }
+
     public Noble getCard(int index) {
         return faceUp.get(index);
     }
@@ -33,6 +37,10 @@ public class NobleFaceUP {
     // remove no refill
     public void remove(int index) {
         faceUp.remove(index);
+    }
+
+    public void remove(Noble noble) {
+        faceUp.remove(noble);
     }
 
     public void printMarket() {

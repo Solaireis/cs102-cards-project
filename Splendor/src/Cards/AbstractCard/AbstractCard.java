@@ -12,8 +12,9 @@ public abstract class AbstractCard {
     private int redCost;
     private int blueCost;
     private int greenCost;
+    private String id;
 
-    public AbstractCard(int points, int blackCost, int whiteCost, int redCost, int blueCost, int greenCost){
+    public AbstractCard(int points, int blackCost, int whiteCost, int redCost, int blueCost, int greenCost, String id){
 
         this.points = points;
         this.blackCost = blackCost;
@@ -21,6 +22,7 @@ public abstract class AbstractCard {
         this.redCost = redCost;
         this.blueCost = blueCost;
         this.greenCost = greenCost;
+        this.id = id;
 
     }
 
@@ -50,5 +52,9 @@ public abstract class AbstractCard {
     @Override
     public String toString() {
         return " (" + points + "pt)" + " cost[Bk=" + blackCost + ", W=" + whiteCost + ", R=" + redCost + ", Bl=" + blueCost + ", G=" + greenCost + "]";
+    }
+
+    public String getID() {
+        return id;
     }
 }

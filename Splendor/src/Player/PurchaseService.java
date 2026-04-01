@@ -33,7 +33,7 @@ public class PurchaseService {
 
 //  Actual buy action
     public static void buy(Player p, DevelopmentCard c, TokenBank tb){
-        if(!canBuy(p , c)){
+        if (!canBuy(p , c)) {
             throw new IllegalArgumentException("Player cannot afford this card");
         }
 
@@ -46,7 +46,7 @@ public class PurchaseService {
             if (p.getTokens(color) > amountNeedToPay) {
                 p.removeTokens(color, amountNeedToPay);
                 tb.add(color, amountNeedToPay);
-            }else{
+            } else{
                 int payWithColor = p.getTokens(color);
                 int payWithGold = amountNeedToPay - payWithColor;
                 p.removeTokens(color, payWithColor);

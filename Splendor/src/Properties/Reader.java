@@ -109,33 +109,63 @@ public class Reader {
     
     /**
      * Returns the image path directory for the cards images for Java FX
-     * @return image path directory
+     * @return the noble image path directory
      */
     public String getNobleImages(){
         return configProps.getProperty("nobleImages");
     }
 
+    /**
+     * Returns the image path for the tier 1 directory.
+     *
+     * @return the tier 1 cards directory
+     */
     public String getTierOneDir(){
         return configProps.getProperty("tierOneDir");
     }
 
+    /**
+     * Returns the image path for the tier 2 directory.
+     *
+     * @return the tier 2 cards directory
+     */
     public String getTierTwoDir(){
         return configProps.getProperty("tierTwoDir");
     }
 
+    /**
+     * Returns the image path for the tier 3 directory.
+     *
+     * @return the tier 3 cards directory
+     */
     public String getTierThreeDir(){
         return configProps.getProperty("tierThreeDir");
     }
 
+    /**
+     * Returns the image path for the tier 1 deck back card.
+     *
+     * @return the tier 1 card-back image path
+     */
     public String getTierOneCardBack(){
-        return configProps.getProperty("TierOneCardBack");
+        return configProps.getProperty("tierOneCardBack");
     }
 
+    /**
+     * Returns the image path for the tier 2 deck back card.
+     *
+     * @return the tier 2 card-back image path
+     */
     public String getTierTwoCardBack(){
-        return configProps.getProperty("TierTwoCardBack");
+        return configProps.getProperty("tierTwoCardBack");
     }
 
+    /**
+     * Returns the image path for the tier 3 deck back card.
+     *
+     * @return the tier 3 card-back image path
+     */
     public String getTierThreeCardBack(){
-        return configProps.getProperty("TierThreeCardBack");
+        return configProps.getProperty("tierThreeCardBack");
     }
 }

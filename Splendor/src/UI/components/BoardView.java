@@ -120,7 +120,20 @@ public class BoardView extends VBox {
      * @param cards the tier 1 cards to display
      */
     public void loadTier1(List<DevelopmentCard> cards) {
-        loadTierRow(tier1Row, cards, 1, "/UI/images/cards/devCards/tier1/", "/UI/images/cards/devCards/tier1/tier1Back.png");
+        String cardsPath = null;
+        String cardsBackPath = null;
+        try{
+                Reader reader = new Reader(); // Create an instance of Reader
+                cardsPath = reader.getTierOneDir();
+                cardsBackPath = reader.getTierOneCardBack();
+                System.out.println("Image Path File found!");
+                System.out.println("Initializing Images..");
+
+                // Call the method on the instance
+            } catch (Exception e){
+                    System.out.println("Cant find file");
+            } 
+        loadTierRow(tier1Row, cards, 1, cardsPath, cardsBackPath);
     }
 
     /**
@@ -129,7 +142,20 @@ public class BoardView extends VBox {
      * @param cards the tier 2 cards to display
      */
     public void loadTier2(List<DevelopmentCard> cards) {
-        loadTierRow(tier2Row, cards, 2, "/UI/images/cards/devCards/tier2/", "/UI/images/cards/devCards/tier2/tier2Back.png");
+        String cardsPath = null;
+        String cardsBackPath = null;
+        try{
+                Reader reader = new Reader(); // Create an instance of Reader
+                cardsPath = reader.getTierTwoDir();
+                cardsBackPath = reader.getTierTwoCardBack();
+                System.out.println("Image Path File found!");
+                System.out.println("Initializing Images..");
+
+                // Call the method on the instance
+            } catch (Exception e){
+                    System.out.println("Cant find file");
+            } 
+        loadTierRow(tier2Row, cards, 2, cardsPath, cardsBackPath);
     }
 
     /**
@@ -138,7 +164,20 @@ public class BoardView extends VBox {
      * @param cards the tier 3 cards to display
      */
     public void loadTier3(List<DevelopmentCard> cards) {
-        loadTierRow(tier3Row, cards, 3, "/UI/images/cards/devCards/tier3/", "/UI/images/cards/devCards/tier3/tier3Back.png");
+        String cardsPath = null;
+        String cardsBackPath = null;
+        try{
+                Reader reader = new Reader(); // Create an instance of Reader
+                cardsPath = reader.getTierThreeDir();
+                cardsBackPath = reader.getTierThreeCardBack();
+                System.out.println("Image Path File found!");
+                System.out.println("Initializing Images..");
+
+                // Call the method on the instance
+            } catch (Exception e){
+                    System.out.println("Cant find file");
+            } 
+        loadTierRow(tier3Row, cards, 3, cardsPath, cardsBackPath);
     }
 
     /**

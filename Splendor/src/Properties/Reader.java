@@ -114,4 +114,28 @@ public class Reader {
     public String getNobleImages(){
         return configProps.getProperty("nobleImages");
     }
+
+    public String getTierOneDir(){
+        return configProps.getProperty("tierOneDir");
+    }
+
+    public String getTierTwoDir(){
+        return configProps.getProperty("tierTwoDir");
+    }
+
+    public String getTierThreeDir(){
+        return configProps.getProperty("tierThreeDir");
+    }
+
+    public String getTierOneCardBack(){
+        return configProps.getProperty("TierOneCardBack");
+    }
+
+    public String getTierTwoCardBack(){
+        return configProps.getProperty("TierTwoCardBack");
+    }
+
+    public String getTierThreeCardBack(){
+        return configProps.getProperty("TierThreeCardBack");
+    }
 }

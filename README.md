@@ -70,9 +70,8 @@ This design allows both versions to represent the same game while using differen
 
 
 ```md id="y45l3g"
-## Package Overview
+## SRC Package Overview
 
-```text
 src/
 ├── Cards/                   # Shared card and token data classes
 │   ├── AbstractCard/        # Base card classes

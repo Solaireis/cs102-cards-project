@@ -1,5 +1,7 @@
 package Player;
 
+package Player;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -10,12 +12,22 @@ import Cards.Token.TokenBank;
 import Test.GameLogic;
 import Test.MoveResult;
 
+/**
+ * Handles the computer player's automatic decision-making.
+ * This class chooses and performs the computer's main action
+ * based on a simple priority order.
+ */
 public class ComputerService {
 
-    private static final List<String> TAKE_COLORS = new ArrayList<>(
-        Arrays.asList(TokenBank.WHITE, TokenBank.BLUE, TokenBank.GREEN, TokenBank.RED, TokenBank.BLACK)
-    );
-
+    /**
+     * Performs the computer player's main action for its turn.
+     * The computer follows this priority order:
+     * buy a reserved card, buy a market card, take 3 different tokens,
+     * take 2 of the same token, or reserve a face-up card.
+     *
+     * @param gameLogic the current game logic instance
+     * @return the result of the computer's chosen action
+     */
     public static MoveResult performMainAction(GameLogic gameLogic) {
         if (!(gameLogic.getCurrentPlayer() instanceof Computer)) {
             return MoveResult.fail("Current player is not a computer.");
@@ -23,7 +35,7 @@ public class ComputerService {
 
         Player current = gameLogic.getCurrentPlayer();
 
-        // 1. Buy reserved card if possible
+        // 1. try to buy any reserved card the computer can afford
         for (int i = 0; i < current.totalReserves(); i++) {
             DevelopmentCard card = current.getReserveCard(i);
             if (PurchaseService.canBuy(current, card)) {
@@ -31,7 +43,7 @@ public class ComputerService {
             }
         }
 
-        // 2. Buy market card if possible
+        // If no reserved card can be bought, 2. try to buy a face-up market card.
         for (int level = 3; level >= 1; level--) {
             List<DevelopmentCard> row = gameLogic.getDevelopmentFaceUp().getFaceUp(level);
             for (int i = 0; i < row.size(); i++) {
@@ -42,7 +54,7 @@ public class ComputerService {
             }
         }
 
-        // 3. Take 3 different tokens if possible
+        // If no card can be bought, 3. try to take 3 different available token colors.
         List<String> colors = new ArrayList<>(Arrays.asList(
             TokenBank.WHITE, TokenBank.BLUE, TokenBank.GREEN, TokenBank.RED, TokenBank.BLACK
         ));
@@ -59,7 +71,7 @@ public class ComputerService {
             return gameLogic.takeThreeTokens(available.get(0), available.get(1), available.get(2));
         }
 
-        // 4. Take 2 same if possible
+        // If that is not possible, 4. try taking 2 tokens of the same color.
         Collections.shuffle(colors);
         for (String color : colors) {
             if (gameLogic.getTokenBank().hasEnough(color, 4)) {
@@ -67,7 +79,7 @@ public class ComputerService {
             }
         }
 
-        // 5. Reserve first available face-up card
+        // If the computer still cannot act, reserve the first available face-up card.
         if (current.totalReserves() < 3) {
             for (int level = 1; level <= 3; level++) {
                 List<DevelopmentCard> row = gameLogic.getDevelopmentFaceUp().getFaceUp(level);
@@ -77,8 +89,7 @@ public class ComputerService {
             }
         }
 
+        // If no valid action is possible, do nothing.
         return MoveResult.success("Computer took no action.");
     }
-
-
 }

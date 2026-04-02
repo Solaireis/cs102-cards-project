@@ -6,16 +6,17 @@ import Cards.Token.TokenBank;
 import java.util.ArrayList;
 
 /**
- * The NobleService class checks and awards eligible nobles to players
+ * Handles checking noble eligibility and awarding nobles to players.
  */
 
 public class NobleService {
 
     /**
-     * Returns an arrayList of eligible nobles player qualified for
+     * Returns all face up nobles the player currently qualifies for
+     * 
      * @param player Player to check
      * @param nobleFaceUp Deck of face up noble cards
-     * @return arrayList of eligible nobles
+     * @return a list of eligible nobles
      */
     public ArrayList<Noble> getEligibleNobles(Player player, NobleFaceUP nobleFaceUp) {
         ArrayList<Noble> eligible = new ArrayList<>();
@@ -30,11 +31,12 @@ public class NobleService {
     }
 
     /**
-     * Returns the Noble Object chosen by player
-     * @param player Player
-     * @param nobleFaceUp Deck of face up noble cards
-     * @param chosen Chosen noble card
-     * @return Noble Object chosen by player
+     * Awards the chosen noble to the player and removes it from the face-up nobles.
+     * 
+     * @param player the player receiving the noble
+     * @param nobleFaceUp the collection of face-up nobles
+     * @param chosen the noble chosen by the player
+     * @return the awarded noble, or null if no noble was chosen
      */
     public Noble awardChosenNoble(Player player, NobleFaceUP nobleFaceUp, Noble chosen) {
         if (chosen == null) {
@@ -47,10 +49,11 @@ public class NobleService {
     }
 
     /**
-     * Returns true if player qualifies for visit by noble
-     * @param player Player
-     * @param noble Specific noble object
-     * @return true if player qualifies, false otherwise
+     * Checks whether the player qualifies for the given noble.
+     *
+     * @param player the player to check
+     * @param noble the noble being checked
+     * @return true if the player has enough bonuses to attract the noble, false otherwise
      */
     private boolean qualifies(Player player, Noble noble) {
         return player.getBonus(TokenBank.WHITE) >= noble.getCost(TokenBank.WHITE)

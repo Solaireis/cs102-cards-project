@@ -103,9 +103,6 @@ public class DevelopmentCardFaceUP {
      * @param row arrayList of face up cards in a specific level
      */
     private void printRow(ArrayList<DevelopmentCard> row) {
-        // for (int i = 0; i < row.size(); i++) {
-        //     System.out.println("[" + i + "] " + row.get(i));
-        // }
 
         String[] colors = {"BLACK", "WHITE", "RED", "BLUE", "GREEN"};
         String[][] matrix = new String[9][row.size()];

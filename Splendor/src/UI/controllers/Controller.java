@@ -39,12 +39,16 @@ import Player.Computer;
 import Player.ComputerService;
 import javafx.animation.PauseTransition;
 
-
+/**
+ * Controls the main game screen and connects the UI to the game logic.
+ * This class handles player actions, board interactions, UI updates,
+ * popups, background animation, and computer turns.
+ */
 public class Controller {
 
     @FXML private AnchorPane root;
 
-    // Background
+    // Background images
     @FXML private ImageView gameSky;
     @FXML private ImageView gameCloud1A;
     @FXML private ImageView gameCloud1B;
@@ -57,7 +61,7 @@ public class Controller {
     @FXML private ImageView gameCloud5A;
     @FXML private ImageView gameCloud5B;
 
-    // Tokens
+    // Token controls and bank display
     @FXML private VBox tokenBox;
     @FXML private Button goldBtn;
     @FXML private Button greenBtn;
@@ -78,18 +82,18 @@ public class Controller {
     @FXML private Label redBankCountLabel;
     @FXML private Label blueBankCountLabel;
 
-    // Options Menu Label
+    // Turn and current player display
     @FXML private Label currentPlayerLabel;
     @FXML private Label turnLabel;
 
-    // 5 Choices Buttons
+    // Main action buttons
     @FXML private Button takeThreeTokensButton;
     @FXML private Button takeTwoTokensButton;
     @FXML private Button buyCardButton;
     @FXML private Button reserveCardButton;
     @FXML private Button endTurnButton;
 
-    // Player Stats
+    // Current player stats and info
     @FXML private Label pointsLabel;
     @FXML private VBox currentPlayerTokensBox;
 
@@ -97,23 +101,30 @@ public class Controller {
     @FXML private Button viewBoughtButton;
     @FXML private Button viewNobleButton;
 
-    // Board (4 rows of cards)
+    // Board display
     @FXML private StackPane boardContainer;
 
-    // Bottom Status Label
+    // Bottom status bar
     @FXML private Label statusBarLabel;
     @FXML private HBox statusBar;
     @FXML private Label statusIcon;
 
-
-    // Back End
+    // Main board UI component and backend game logic
     private BoardView boardView;
     private GameLogic gameLogic;
+
+    /**
+     * Tracks the player's current main action selection.
+     */
     private enum ActionMode {
         NONE, TAKE_TOKENS, BUY_CARD, RESERVE_CARD
     }
+
     private ActionMode currentMode = ActionMode.NONE;
 
+    /**
+     * Tracks the current token-taking action mode.
+     */
     private enum TokenActionMode {
         NONE,
         TAKE_THREE,
@@ -123,20 +134,19 @@ public class Controller {
     private TokenActionMode tokenActionMode = TokenActionMode.NONE;
     private final ArrayList<String> selectedTokenColors = new ArrayList<>();
 
-    // Tracks if player has successfully reserved a card this turn yet
+    // Tracks whether the player may take a gold token after reserving a card
     private boolean canTakeGoldAfterReserve = false;
-    
-    // Tracks if player has used their main action yet (view reserved or view bought not a main action)
+
+    // Tracks whether the player has already used their main action this turn
     private boolean turnActionCommitted = false;
 
-    // Waiting for a winner!
+    // Prevents the winner popup from being shown multiple times
     private boolean winnerPopupShown = false;
-
 
     private static final double BASE_W = 1400;
     private static final double BASE_H = 900;
 
-    // px/sec: slower = farther, faster = closer
+    // Cloud movement speeds in pixels per second
     private static final double LAYER1_SPEED = 10.0;
     private static final double LAYER2_SPEED = 14.0;
     private static final double LAYER3_SPEED = 20.0;
@@ -145,31 +155,37 @@ public class Controller {
 
     private AnimationTimer cloudTimer;
 
+    /**
+     * Initializes the game screen after the FXML elements are loaded.
+     * This sets up the animated background, token images, board view,
+     * board click handlers, and debug keyboard shortcuts.
+     */
     @FXML
     public void initialize() {
 
-        // Cloud backgrounds
+        // Set up animated cloud background
         loadBackgrounds();
         setupLayers();
         startCloudScroll();
 
-        // Load tokens
+        // Load token images
         loadTokenImages();
 
-        //load board
+        // Create and attach the main board view
         boardView = new BoardView();
         boardContainer.getChildren().add(boardView);
 
+        // Connect board clicks to controller handlers
         boardView.setOnFaceUpCardClick((tier, index) -> handleFaceUpCardClick(tier, index));
         boardView.setOnTopDeckClick(tier -> handleTopDeckClick(tier));
         boardView.setOnNobleClick(index -> handleNobleClick(index));
 
-        //cheater method
+        // Debug shortcuts for quickly granting bonuses during testing
         root.sceneProperty().addListener((obs, oldScene, newScene) -> {
             if (newScene != null) {
                 newScene.setOnKeyPressed(e -> {
                     if (gameLogic == null) return;
-                
+
                     switch (e.getCode()) {
                         case DIGIT1 -> updateStatus(gameLogic.debugGrantBonus(TokenBank.WHITE, 1));
                         case DIGIT2 -> updateStatus(gameLogic.debugGrantBonus(TokenBank.BLUE, 1));
@@ -178,16 +194,19 @@ public class Controller {
                         case DIGIT5 -> updateStatus(gameLogic.debugGrantBonus(TokenBank.BLACK, 1));
                         default -> { return; }
                     }
-                
+
                     refreshFromGameLogic();
                 });
             }
         });
     }
 
+    /* ------------------------------------ Main Action Buttons ------------------------------------ */
 
-/* ------------------------------------ Main Actions ------------------------------------ */
-
+    /**
+     * Handles the Buy Card button.
+     * The player must then click a face-up or reserved card to complete the action.
+     */
     @FXML
     private void handleBuyCard() {
         if (isTurnLockedForNewAction()) {
@@ -200,6 +219,10 @@ public class Controller {
         updateStatus(MoveResult.success("Click a face-up or reserved card to buy it"));
     }
 
+    /**
+     * Handles the Reserve Card button.
+     * The player must then click a face-up card or top deck card to reserve.
+     */
     @FXML
     private void handleReserveCard() {
         if (isTurnLockedForNewAction()) {
@@ -212,6 +235,10 @@ public class Controller {
         updateStatus(MoveResult.success("Click a face-up/top-deck card to reserve it, then take a gold coin"));
     }
 
+    /**
+     * Handles the Take 3 Tokens button.
+     * The player must select 3 different token colors.
+     */
     @FXML
     private void handleTakeThreeTokens() {
         if (isTurnLockedForNewAction()) {
@@ -224,7 +251,11 @@ public class Controller {
         tokenActionMode = TokenActionMode.TAKE_THREE;
         updateStatus(MoveResult.success("Choose 3 different token colors."));
     }
-    
+
+    /**
+     * Handles the Take 2 Same Tokens button.
+     * The player must select 1 token color to take 2 of.
+     */
     @FXML
     private void handleTakeTwoSameTokens() {
         if (isTurnLockedForNewAction()) {
@@ -238,6 +269,11 @@ public class Controller {
         updateStatus(MoveResult.success("Choose 1 color to take 2 of."));
     }
 
+    /**
+     * Handles the End Turn button.
+     * This attempts to end the player's turn, refreshes the UI,
+     * checks for a winner, and runs the computer turn if needed.
+     */
     @FXML
     private void handleEndTurn() {
         if (gameLogic == null) {
@@ -260,8 +296,15 @@ public class Controller {
         maybeRunComputerTurn();
     }
 
+    /* ------------------------------------ Board Click Handlers ------------------------------------ */
 
-/* ------------------------------------ Main Action Helpers ------------------------------------ */
+    /**
+     * Handles clicks on face-up development cards on the board.
+     * The result depends on whether the player is currently buying or reserving.
+     *
+     * @param tier the tier of the clicked card
+     * @param index the position of the clicked card in that tier
+     */
     private void handleFaceUpCardClick(int tier, int index) {
         if (gameLogic == null) {
             return;
@@ -271,9 +314,9 @@ public class Controller {
             updateStatus(MoveResult.fail("You already used your turn action. Press End Turn."));
             return;
         }
-    
+
         MoveResult result;
-    
+
         switch (currentMode) {
             case BUY_CARD:
                 result = gameLogic.buyMarketCard(tier, index);
@@ -288,7 +331,13 @@ public class Controller {
                 return;
         }
     }
-    
+
+    /**
+     * Handles clicks on the top deck of a development card tier.
+     * Top deck cards may only be clicked when reserving.
+     *
+     * @param tier the tier of the clicked top deck
+     */
     private void handleTopDeckClick(int tier) {
         if (gameLogic == null) {
             return;
@@ -298,16 +347,22 @@ public class Controller {
             updateStatus(MoveResult.fail("You already used your turn action. Press End Turn."));
             return;
         }
-    
+
         if (currentMode != ActionMode.RESERVE_CARD) {
             updateStatus(MoveResult.fail("Can only reserve the top of deck. Choose Reserve Card first."));
             return;
         }
-    
+
         MoveResult result = gameLogic.reserveTopDeckCard(tier);
         finishReserveAction(result);
     }
-    
+
+    /**
+     * Handles clicks on noble cards on the board.
+     * A noble can only be chosen when the game is waiting for a noble choice.
+     *
+     * @param boardIndex the index of the clicked noble on the board
+     */
     private void handleNobleClick(int boardIndex) {
         if (gameLogic == null) {
             return;
@@ -333,6 +388,13 @@ public class Controller {
         maybeRunComputerTurn();
     }
 
+    /**
+     * Handles clicks on a reserved card inside the reserved-card popup.
+     * Reserved cards can only be clicked for buying.
+     *
+     * @param reserveIndex the index of the reserved card
+     * @param popupStage the popup window containing the reserved cards
+     */
     private void handleReservedCardClick(int reserveIndex, Stage popupStage) {
         if (gameLogic == null) {
             return;
@@ -360,13 +422,21 @@ public class Controller {
         finishStandardAction(result);
     }
 
+    /* ------------------------------------ Game Logic Sync ------------------------------------ */
 
-
+    /**
+     * Attaches the given game logic to this controller and refreshes the UI.
+     *
+     * @param gameLogic the game logic instance for this game
+     */
     public void setGameLogic(GameLogic gameLogic) {
         this.gameLogic = gameLogic;
         refreshFromGameLogic();
     }
 
+    /**
+     * Refreshes the board display from the current game state.
+     */
     private void refreshBoardFromGameLogic() {
         if (gameLogic == null) {
             return;
@@ -379,6 +449,10 @@ public class Controller {
         boardView.clearSelection();
     }
 
+    /**
+     * Refreshes all major UI elements from the current game state.
+     * This includes current player info, token counts, button states, and board content.
+     */
     private void refreshFromGameLogic() {
         if (gameLogic == null) {
             return;
@@ -389,7 +463,7 @@ public class Controller {
         currentPlayerLabel.setText(currentPlayer.getName());
         turnLabel.setText("Turn: " + gameLogic.getTurnNumber());
         pointsLabel.setText("Points: " + currentPlayer.getPoints());
-        pointsLabel.setStyle("-fx-text-fill: white; -fx-font-size: 15px;");                     // matches player token box styling
+        pointsLabel.setStyle("-fx-text-fill: white; -fx-font-size: 15px;");
         viewReservedButton.setText("View Reserved (" + currentPlayer.totalReserves() + ")");
         viewBoughtButton.setText("View Bought (" + currentPlayer.totalDevelopmentCards() + ")");
         viewNobleButton.setText("View Noble (" + currentPlayer.totalNobles() + ")");
@@ -401,6 +475,12 @@ public class Controller {
         refreshBoardFromGameLogic();
     }
 
+    /**
+     * Checks whether the given move result means the turn has actually advanced.
+     *
+     * @param result the result returned by the game logic
+     * @return true if the turn ended, false otherwise
+     */
     private boolean didTurnActuallyEnd(MoveResult result) {
         String message = result.getMessage();
 
@@ -409,10 +489,14 @@ public class Controller {
             || message.contains("Final round complete.")
             || message.contains("Player reached winning condition.");
     }
-    
-/* ------------------------------------ Update Parts of UI Helper methods ------------------------------------ */
 
+    /* ------------------------------------ UI Update Helpers ------------------------------------ */
 
+    /**
+     * Updates the current player's token and bonus display.
+     *
+     * @param player the player whose tokens and bonuses should be shown
+     */
     private void updateCurrentPlayerTokensBox(Player player) {
         currentPlayerTokensBox.getChildren().clear();
 
@@ -426,6 +510,14 @@ public class Controller {
         );
     }
 
+    /**
+     * Creates one row showing a token count and bonus count for a color.
+     *
+     * @param colorName the display name of the color
+     * @param tokenCount the number of tokens the player has
+     * @param bonusCount the number of bonuses the player has
+     * @return the UI row displaying the token and bonus counts
+     */
     private HBox createTokenBonusRow(String colorName, int tokenCount, int bonusCount) {
         Label leftLabel = new Label(colorName + ": " + tokenCount);
         leftLabel.setStyle("-fx-text-fill: white; -fx-font-size: 15px;");
@@ -442,6 +534,11 @@ public class Controller {
         return row;
     }
 
+    /**
+     * Updates the bottom status bar using the given move result.
+     *
+     * @param result the result to display
+     */
     private void updateStatus(MoveResult result) {
         statusBarLabel.setText(result.getMessage());
         if (result.isSuccess()) {
@@ -461,7 +558,7 @@ public class Controller {
                 "-fx-padding: 0 18 0 18;" +
                 "-fx-border-color: rgba(255,255,255,0.12);" +
                 "-fx-border-width: 1 0 0 0;"
-            );            
+            );
         }
 
         statusIcon.setStyle(
@@ -473,6 +570,9 @@ public class Controller {
         );
     }
 
+    /**
+     * Updates the token counts shown for the shared token bank.
+     */
     private void updateTokenBankCounts() {
         if (gameLogic == null) {
             return;
@@ -488,19 +588,25 @@ public class Controller {
         blueBankCountLabel.setText(String.valueOf(bank.get(TokenBank.BLUE)));
     }
 
+    /**
+     * Updates the main action button appearance based on whether the player's turn action is already used.
+     */
     private void updateActionButtonStates() {
         String enabledStyle = "";
         String lockedStyle =
             "-fx-opacity: 0.55;" +
             "-fx-background-color: #999999;" +
             "-fx-text-fill: #dddddd;";
-    
+
         takeThreeTokensButton.setStyle(turnActionCommitted ? lockedStyle : enabledStyle);
         takeTwoTokensButton.setStyle(turnActionCommitted ? lockedStyle : enabledStyle);
         buyCardButton.setStyle(turnActionCommitted ? lockedStyle : enabledStyle);
         reserveCardButton.setStyle(turnActionCommitted ? lockedStyle : enabledStyle);
     }
 
+    /**
+     * Enables or disables token buttons based on the current bank contents.
+     */
     private void updateTokenButtonStates() {
         if (gameLogic == null) {
             return;
@@ -517,6 +623,15 @@ public class Controller {
         goldBtn.setDisable(bank.get(TokenBank.GOLD) == 0);
     }
 
+    /* ------------------------------------ Popup Windows ------------------------------------ */
+
+    /**
+     * Shows a popup window containing development cards.
+     *
+     * @param title the popup title
+     * @param cards the cards to display
+     * @param reservedPopup true if the popup is showing reserved cards
+     */
     private void showCardsPopup(String title, List<DevelopmentCard> cards, boolean reservedPopup) {
         Stage popupStage = new Stage();
         popupStage.initOwner(root.getScene().getWindow());
@@ -549,6 +664,15 @@ public class Controller {
         popupStage.show();
     }
 
+    /**
+     * Creates one card node for a development card popup.
+     *
+     * @param card the card to display
+     * @param reserveIndex the index of the card if it is a reserved card
+     * @param popupStage the popup window containing the card
+     * @param reservedPopup true if the popup is for reserved cards
+     * @return the UI node displaying the card
+     */
     private VBox createCardPopupNode(DevelopmentCard card, int reserveIndex, Stage popupStage, boolean reservedPopup) {
         VBox box = new VBox(8);
         box.setAlignment(Pos.CENTER);
@@ -569,6 +693,12 @@ public class Controller {
         return box;
     }
 
+    /**
+     * Shows a popup window containing noble cards.
+     *
+     * @param title the popup title
+     * @param nobles the nobles to display
+     */
     private void showNoblesPopup(String title, List<Noble> nobles) {
         Stage popupStage = new Stage();
         popupStage.initOwner(root.getScene().getWindow());
@@ -601,6 +731,12 @@ public class Controller {
         popupStage.show();
     }
 
+    /**
+     * Creates one card node for a noble popup.
+     *
+     * @param noble the noble to display
+     * @return the UI node displaying the noble
+     */
     private VBox createNoblePopupNode(Noble noble) {
         VBox box = new VBox(8);
         box.setAlignment(Pos.CENTER);
@@ -616,6 +752,9 @@ public class Controller {
         return box;
     }
 
+    /**
+     * Shows the winner popup once when the game has ended.
+     */
     private void maybeShowWinnerPopup() {
         if (winnerPopupShown || gameLogic == null || !gameLogic.isGameOver()) {
             return;
@@ -642,6 +781,11 @@ public class Controller {
         showWinnerPopup(winnerText);
     }
 
+    /**
+     * Displays the final winner popup with celebration effects.
+     *
+     * @param winnerName the winning player's name, or names in case of a tie
+     */
     private void showWinnerPopup(String winnerName) {
         Stage popupStage = new Stage();
         popupStage.initOwner(root.getScene().getWindow());
@@ -725,6 +869,12 @@ public class Controller {
         floaty.play();
     }
 
+    /* ------------------------------------ Computer Turn Logic ------------------------------------ */
+
+    /**
+     * Runs the computer player's turn if the current player is a computer.
+     * The computer pauses briefly before acting to make the turn easier to follow.
+     */
     private void maybeRunComputerTurn() {
         if (gameLogic == null || gameLogic.isGameOver()) {
             return;
@@ -740,7 +890,7 @@ public class Controller {
             updateStatus(actionResult);
             refreshFromGameLogic();
 
-            // if reserve succeeded and gold is available, let computer take gold after a short pause
+            // After reserving, let the computer take gold if gold is available
             if (gameLogic.getCurrentPlayer() instanceof Computer
                     && currentMode == ActionMode.RESERVE_CARD
                     && canTakeGoldAfterReserve) {
@@ -761,6 +911,10 @@ public class Controller {
         actionPause.play();
     }
 
+    /**
+     * Ends the computer player's turn after a short delay.
+     * If a noble choice is required, the computer automatically chooses the first option.
+     */
     private void runComputerEndTurn() {
         PauseTransition endPause = new PauseTransition(Duration.millis(2000));
         endPause.setOnFinished(e -> {
@@ -787,9 +941,11 @@ public class Controller {
         endPause.play();
     }
 
+    /* ------------------------------------ Background Setup ------------------------------------ */
 
-/* ------------------------------------ Setting Up Cloud Background ------------------------------------ */
-
+    /**
+     * Loads all background images used in the game screen.
+     */
     private void loadBackgrounds() {
         gameSky.setImage(loadBackgroundImage("gameSky.png"));
 
@@ -809,7 +965,9 @@ public class Controller {
         gameCloud5B.setImage(loadBackgroundImage("gameCloud5.png"));
     }
 
-    // Layering cloud backgrounds
+    /**
+     * Sets up the cloud layers so they fill the screen and scroll correctly.
+     */
     private void setupLayers() {
         bindFullScreen(gameSky);
 
@@ -824,14 +982,14 @@ public class Controller {
         bindFullScreen(gameCloud5A);
         bindFullScreen(gameCloud5B);
 
-        // Position B copy just to the left of A
+        // Position the B copy just to the left of the A copy
         resetPair(gameCloud1A, gameCloud1B, BASE_W);
         resetPair(gameCloud2A, gameCloud2B, BASE_W);
         resetPair(gameCloud3A, gameCloud3B, BASE_W);
         resetPair(gameCloud4A, gameCloud4B, BASE_W);
         resetPair(gameCloud5A, gameCloud5B, BASE_W);
 
-        // depth effect
+        // Use opacity to give the clouds a depth effect
         gameCloud1A.setOpacity(0.55);
         gameCloud1B.setOpacity(0.55);
         gameCloud2A.setOpacity(0.65);
@@ -844,6 +1002,11 @@ public class Controller {
         gameCloud5B.setOpacity(0.90);
     }
 
+    /**
+     * Binds an image view so it stretches to fill the root pane.
+     *
+     * @param v the image view to bind
+     */
     private void bindFullScreen(ImageView v) {
         v.fitWidthProperty().bind(root.widthProperty());
         v.fitHeightProperty().bind(root.heightProperty());
@@ -852,11 +1015,21 @@ public class Controller {
         v.setMouseTransparent(true);
     }
 
+    /**
+     * Resets a pair of scrolling cloud images so one starts immediately to the left of the other.
+     *
+     * @param a the first image
+     * @param b the second image
+     * @param width the width used for positioning
+     */
     private void resetPair(ImageView a, ImageView b, double width) {
         a.setLayoutX(0);
         b.setLayoutX(-width);
     }
 
+    /**
+     * Starts the cloud scrolling animation.
+     */
     private void startCloudScroll() {
         cloudTimer = new AnimationTimer() {
             long last = 0;
@@ -885,6 +1058,14 @@ public class Controller {
         cloudTimer.start();
     }
 
+    /**
+     * Scrolls a pair of cloud images horizontally and wraps them when needed.
+     *
+     * @param a the first image in the pair
+     * @param b the second image in the pair
+     * @param dx the horizontal movement amount
+     * @param w the width of the screen
+     */
     private void scrollPair(ImageView a, ImageView b, double dx, double w) {
         a.setLayoutX(a.getLayoutX() + dx);
         b.setLayoutX(b.getLayoutX() + dx);
@@ -897,6 +1078,12 @@ public class Controller {
         }
     }
 
+    /**
+     * Loads one background image from the game background resources.
+     *
+     * @param fileName the file name of the image
+     * @return the loaded image
+     */
     private Image loadBackgroundImage(String fileName) {
         String path = "/UI/images/backgrounds/gameBackgrounds/" + fileName;
         URL resource = getClass().getResource(path);
@@ -908,6 +1095,9 @@ public class Controller {
         return new Image(resource.toExternalForm());
     }
 
+    /**
+     * Loads all token images used in the UI.
+     */
     private void loadTokenImages() {
         goldTokenView.setImage(loadTokenImage("gold.png"));
         greenTokenView.setImage(loadTokenImage("greenGem.png"));
@@ -917,6 +1107,12 @@ public class Controller {
         blueTokenView.setImage(loadTokenImage("blueGem.png"));
     }
 
+    /**
+     * Loads one token image from the token image resources.
+     *
+     * @param fileName the file name of the image
+     * @return the loaded token image
+     */
     private Image loadTokenImage(String fileName) {
         String path = "/UI/images/tokens/" + fileName;
         URL resource = getClass().getResource(path);
@@ -928,41 +1124,61 @@ public class Controller {
         return new Image(resource.toExternalForm());
     }
 
+    /* ------------------------------------ Token Button Clicks ------------------------------------ */
 
-/* ------------------------------------ On Token Clicks ------------------------------------ */
+    /**
+     * Handles clicking the gold token button.
+     */
     @FXML
     private void onGoldTokenClick() {
         handleGoldTokenClick();
     }
 
+    /**
+     * Handles clicking the green token button.
+     */
     @FXML
     private void onGreenTokenClick() {
         handleTokenClick(TokenBank.GREEN);
     }
 
+    /**
+     * Handles clicking the white token button.
+     */
     @FXML
     private void onWhiteTokenClick() {
         handleTokenClick(TokenBank.WHITE);
     }
 
+    /**
+     * Handles clicking the black token button.
+     */
     @FXML
     private void onBlackTokenClick() {
-        handleTokenClick(TokenBank.BLACK);  
+        handleTokenClick(TokenBank.BLACK);
     }
 
+    /**
+     * Handles clicking the red token button.
+     */
     @FXML
     private void onRedTokenClick() {
         handleTokenClick(TokenBank.RED);
     }
 
+    /**
+     * Handles clicking the blue token button.
+     */
     @FXML
     private void onBlueTokenClick() {
         handleTokenClick(TokenBank.BLUE);
     }
 
+    /* ------------------------------------ View Buttons and Token Logic ------------------------------------ */
 
-/* ------------------------------------ Unsorted LMFAO ------------------------------------ */
-
+    /**
+     * Shows the current player's reserved cards in a popup window.
+     */
     @FXML
     private void handleViewReserved() {
         if (gameLogic == null) {
@@ -973,6 +1189,9 @@ public class Controller {
         showCardsPopup("Reserved Cards", currentPlayer.getReservedCards(), true);
     }
 
+    /**
+     * Shows the current player's bought cards in a popup window.
+     */
     @FXML
     private void handleViewBought() {
         if (gameLogic == null) {
@@ -983,6 +1202,9 @@ public class Controller {
         showCardsPopup("Bought Cards", currentPlayer.getBoughtCards(), false);
     }
 
+    /**
+     * Shows the current player's nobles in a popup window.
+     */
     @FXML
     private void handleViewNoble() {
         if (gameLogic == null) {
@@ -993,7 +1215,12 @@ public class Controller {
         showNoblesPopup("Noble Cards", currentPlayer.getPlayerNobles());
     }
 
-
+    /**
+     * Handles clicks on a non-gold token button.
+     * The result depends on the currently selected token action mode.
+     *
+     * @param color the clicked token color
+     */
     private void handleTokenClick(String color) {
         if (turnActionCommitted) {
             updateStatus(MoveResult.fail("You already used your turn action. Press End Turn."));
@@ -1016,7 +1243,11 @@ public class Controller {
         }
     }
 
-
+    /**
+     * Handles one token selection while the player is taking 3 different tokens.
+     *
+     * @param color the selected token color
+     */
     private void handleTakeThreeSelection(String color) {
         if (selectedTokenColors.contains(color)) {
             updateStatus(MoveResult.fail("Pick 3 different colors."));
@@ -1041,11 +1272,21 @@ public class Controller {
         finishTokenAction(result);
     }
 
+    /**
+     * Handles the token selection for taking 2 of the same token color.
+     *
+     * @param color the selected token color
+     */
     private void handleTakeTwoSameSelection(String color) {
         MoveResult result = gameLogic.takeTwoTokens(color);
         finishTokenAction(result);
     }
 
+    /**
+     * Finishes a token-taking action and updates the UI accordingly.
+     *
+     * @param result the result of the token action
+     */
     private void finishTokenAction(MoveResult result) {
         if (!result.isSuccess()) {
             clearSelectedTokenColors();
@@ -1062,15 +1303,26 @@ public class Controller {
         updateStatus(MoveResult.success(result.getMessage() + " Press End Turn when ready."));
     }
 
+    /**
+     * Clears the list of currently selected token colors.
+     */
     private void clearSelectedTokenColors() {
         selectedTokenColors.clear();
     }
 
+    /**
+     * Resets token-taking mode and clears any selected token colors.
+     */
     private void resetTokenActionMode() {
         tokenActionMode = TokenActionMode.NONE;
         selectedTokenColors.clear();
     }
 
+    /**
+     * Finishes a normal action such as buying a card and updates the UI.
+     *
+     * @param result the result of the action
+     */
     private void finishStandardAction(MoveResult result) {
         if (!result.isSuccess()) {
             updateStatus(result);
@@ -1086,6 +1338,11 @@ public class Controller {
         updateStatus(MoveResult.success(result.getMessage() + " Press End Turn when ready."));
     }
 
+    /**
+     * Finishes a reserve action and allows a gold token to be taken if available.
+     *
+     * @param result the result of the reserve action
+     */
     private void finishReserveAction(MoveResult result) {
         if (!result.isSuccess()) {
             canTakeGoldAfterReserve = false;
@@ -1112,6 +1369,9 @@ public class Controller {
         }
     }
 
+    /**
+     * Handles taking a gold token after a successful reserve action.
+     */
     private void handleGoldTokenClick() {
         if (gameLogic == null) {
             return;
@@ -1137,6 +1397,11 @@ public class Controller {
         updateStatus(MoveResult.success(result.getMessage() + " Press End Turn when ready."));
     }
 
+    /**
+     * Checks whether the player has already used their main action this turn.
+     *
+     * @return true if the turn is locked for a new action, false otherwise
+     */
     private boolean isTurnLockedForNewAction() {
         if (turnActionCommitted) {
             updateStatus(MoveResult.fail("You already used your turn action. Press End Turn."));
@@ -1144,7 +1409,4 @@ public class Controller {
         }
         return false;
     }
-
-
-
 }

@@ -195,11 +195,11 @@ public class Computer extends Player {
      * 
      * @param tb                the token bank
      * @param developmentFaceUp development cards currently face up on the table
-     * @param developmentDesk   the current deck of development cards
+     * @param developmentDeck   the current deck of development cards
      * @return a Boolean value indicating whether Computer has successfully reserved
      *         a card or not
      */
-    private boolean computerReserveCard(TokenBank tb, DevelopmentCardFaceUP developmentFaceUp, DevelopmentCardDeck developmentDesk) {
+    private boolean computerReserveCard(TokenBank tb, DevelopmentCardFaceUP developmentFaceUp, DevelopmentCardDeck developmentDeck) {
         if (this.totalReserves() == 3) {
             return false;
         }
@@ -212,7 +212,7 @@ public class Computer extends Player {
             }
 
             chosen = developmentFaceUp.getCard(level, 0);
-            developmentFaceUp.removeAndRefill(level, 0, developmentDesk);
+            developmentFaceUp.removeAndRefill(level, 0, developmentDeck);
             break;
         }
 

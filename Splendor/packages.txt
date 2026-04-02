@@ -5,4 +5,8 @@ Cards.Token
 Player
 Properties
 Test
+UI.components
+UI.controllers
+UI
+
 

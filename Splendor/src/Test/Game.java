@@ -86,6 +86,8 @@ public class Game {
         //list of players
         // numb of players is obtained from properties file
         int numOfPlayers = 0;
+
+        
         try{
             Reader reader = new Reader(); // Create an instance of Reader
             winningCondition = reader.getPrestigePointToWin();
@@ -103,6 +105,8 @@ public class Game {
         } catch (Exception e){
             System.out.println("Cant find file");
         }
+
+
         // If no config properties is found
         if (winningCondition == 0){
             winningCondition = 15;
@@ -140,8 +144,8 @@ public class Game {
         }
 
         TokenBank tb = new TokenBank(numOfPlayers);
-        DevelopmentCardDeck developmentDesk = new DevelopmentCardDeck();
-        DevelopmentCardFaceUP developmentFaceUp = new DevelopmentCardFaceUP(developmentDesk);
+        DevelopmentCardDeck DevelopmentDeck = new DevelopmentCardDeck();
+        DevelopmentCardFaceUP developmentFaceUp = new DevelopmentCardFaceUP(DevelopmentDeck);
         //need to print remaining cards in decks
 
         NobleDeck nobleDeck = new NobleDeck();
@@ -166,7 +170,7 @@ public class Game {
                 turnDisplay(players, player, tb, nobleFaceUp, developmentFaceUp);
 
                 if (player instanceof Computer computer) {
-                    boolean reached = computer.turnAlgorithm(tb, developmentFaceUp, developmentDesk, winningCondition,
+                    boolean reached = computer.turnAlgorithm(tb, developmentFaceUp, DevelopmentDeck, winningCondition,
                             nobleFaceUp);
                     if (!lastRoundTriggered && reached) {
                         lastRoundTriggered = true;
@@ -195,11 +199,11 @@ public class Game {
                                 break;
 
                             case 3:
-                                valid = buyCard(sc, tb, player, developmentFaceUp, developmentDesk);
+                                valid = buyCard(sc, tb, player, developmentFaceUp, DevelopmentDeck);
                                 break;
 
                             case 4:
-                                valid = reserveCard(sc, tb, player, developmentFaceUp, developmentDesk);
+                                valid = reserveCard(sc, tb, player, developmentFaceUp, DevelopmentDeck);
                                 break;
 
                             case 5:
@@ -547,11 +551,11 @@ public class Game {
      * @param tb TokenBank
      * @param player Current player
      * @param developmentFaceUp Face up development cards
-     * @param developmentDesk Development cards in remaining deck
+     * @param DevelopmentDeck Development cards in remaining deck
      * @return true if action valid, false otherwise
      */
     private static boolean reserveCard(Scanner sc, TokenBank tb, Player player, DevelopmentCardFaceUP developmentFaceUp,
-            DevelopmentCardDeck developmentDesk) {
+            DevelopmentCardDeck DevelopmentDeck) {
         if (player.totalReserves() == 3) {
             System.out.println("Reserve full");
             return false;
@@ -586,12 +590,12 @@ public class Game {
                         continue;
                     }
 
-                    if (level == 1 && !developmentDesk.isLevel1Empty()) {
-                        chosen = developmentDesk.drawLevel1();
-                    } else if (level == 2 && !developmentDesk.isLevel2Empty()) {
-                        chosen = developmentDesk.drawLevel2();
-                    } else if (level == 3 && !developmentDesk.isLevel3Empty()) {
-                        chosen = developmentDesk.drawLevel3();
+                    if (level == 1 && !DevelopmentDeck.isLevel1Empty()) {
+                        chosen = DevelopmentDeck.drawLevel1();
+                    } else if (level == 2 && !DevelopmentDeck.isLevel2Empty()) {
+                        chosen = DevelopmentDeck.drawLevel2();
+                    } else if (level == 3 && !DevelopmentDeck.isLevel3Empty()) {
+                        chosen = DevelopmentDeck.drawLevel3();
                     } else {
                         System.out.println("No remaining cards in that level. Choose another level.");
                         continue;
@@ -624,7 +628,7 @@ public class Game {
                     }
 
                     chosen = developmentFaceUp.getCard(level, index);
-                    developmentFaceUp.removeAndRefill(level, index, developmentDesk);
+                    developmentFaceUp.removeAndRefill(level, index, DevelopmentDeck);
                     break;
                 }
             } else {

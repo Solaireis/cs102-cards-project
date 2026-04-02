@@ -8,6 +8,11 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
+/**
+ * Handles the main game rules and turn flow for game.
+ * This class manages players, turn order, player actions, noble attraction,
+ * and the winning and final-round logic.
+ */
 public class GameLogic {
 
     public static final String[] TAKE_COLORS = {
@@ -32,6 +37,14 @@ public class GameLogic {
     private boolean gameOver = false;
     private boolean lastRoundTriggered = false;
 
+
+    /**
+     * Creates a new game with the given players and winning condition.
+     * If fewer than 2 players are provided, a computer player is added automatically.
+     *
+     * @param playerNames the names of the players in the game
+     * @param winningCondition the number of points needed to trigger the final round
+     */
     public GameLogic(List<String> playerNames, int winningCondition) {
         this.winningCondition = winningCondition;
         this.players = new ArrayList<>();
@@ -40,7 +53,7 @@ public class GameLogic {
             players.add(new Player(name));
         }
 
-        // keep your original behavior if only 1 human player
+        // Add computer player if only 1 player
         if (players.size() < 2) {
             players.add(new Computer());
         }
@@ -55,46 +68,104 @@ public class GameLogic {
         this.nobleService = new NobleService();
     }
 
+    /**
+     * Returns the player whose turn it currently is.
+     *
+     * @return the current player
+     */
     public Player getCurrentPlayer() {
         return players.get(currentPlayerIndex);
     }
 
+    /**
+     * Returns the current turn number.
+     *
+     * @return the turn number
+     */
     public int getTurnNumber() {
         return turnNumber;
     }
 
+    /**
+     * Returns all players in the game.
+     *
+     * @return the list of players
+     */
     public ArrayList<Player> getPlayers() {
         return players;
     }
 
+    /**
+     * Returns the token bank used in this game.
+     *
+     * @return the token bank
+     */   
     public TokenBank getTokenBank() {
         return tokenBank;
     }
 
+    /**
+     * Returns the face-up development cards currently available.
+     *
+     * @return the face-up development cards
+     */    
     public DevelopmentCardFaceUP getDevelopmentFaceUp() {
         return developmentFaceUp;
     }
 
+    /**
+     * Returns the face-up nobles currently available.
+     *
+     * @return the face-up nobles
+     */    
     public NobleFaceUP getNobleFaceUp() {
         return nobleFaceUp;
     }
 
+    /**
+     * Returns the list of nobles the current player may choose from.
+     *
+     * @return the pending noble choices
+     */   
     public ArrayList<Noble> getPendingNobleChoices() {
         return pendingNobleChoices;
     }
 
+    /**
+     * Returns whether the current player must choose a noble before ending their turn.
+     *
+     * @return true if a noble choice is pending, false otherwise
+     */    
     public boolean isWaitingForNobleChoice() {
         return waitingForNobleChoice;
     }
-    
+
+    /**
+     * Returns whether the game is over.
+     *
+     * @return true if the game has ended, false otherwise
+     */    
     public boolean isGameOver() {
         return gameOver;
     }
 
+    /**
+     * Returns whether the final round has been triggered.
+     *
+     * @return true if the final round has started, false otherwise
+     */    
     public boolean isLastRoundTriggered() {
         return lastRoundTriggered;
     }
 
+    /**
+     * Lets the current player take three different non-gold tokens.
+     *
+     * @param a the first token color
+     * @param b the second token color
+     * @param c the third token color
+     * @return the result of the move
+     */
     public MoveResult takeThreeTokens(String a, String b, String c) {
         Player player = getCurrentPlayer();
 
@@ -136,7 +207,13 @@ public class GameLogic {
         return MoveResult.success(player.getName() +  " took 3 tokens: " + a + ", " + b + ", " + c + ".");
     }
 
-    
+    /**
+     * Lets the current player take two tokens of the same color.
+     * This is only allowed if the bank has at least 4 of that color.
+     *
+     * @param color the token color to take
+     * @return the result of the move
+     */    
     public MoveResult takeTwoTokens(String color) {
         Player player = getCurrentPlayer();
         color = color.toUpperCase();
@@ -163,6 +240,13 @@ public class GameLogic {
         return MoveResult.success(player.getName() + " has taken 2 " + color + " tokens.");
     }
 
+    /**
+     * Lets the current player buy a face-up development card from the market.
+     *
+     * @param level the card tier level
+     * @param index the position of the card in that tier
+     * @return the result of the move
+     */
     public MoveResult buyMarketCard(int level, int index) {
         Player player = getCurrentPlayer();
 
@@ -182,6 +266,12 @@ public class GameLogic {
         }
     }
 
+    /**
+     * Lets the current player buy one of their reserved cards.
+     *
+     * @param reserveIndex the index of the reserved card
+     * @return the result of the move
+     */
     public MoveResult buyReservedCard(int reserveIndex) {
         Player player = getCurrentPlayer();
 
@@ -205,6 +295,12 @@ public class GameLogic {
         }
     }
 
+    /**
+     * Lets the current player reserve the top card from a development deck.
+     *
+     * @param level the deck level to reserve from
+     * @return the result of the move
+     */
     public MoveResult reserveTopDeckCard(int level) {
         Player player = getCurrentPlayer();
 
@@ -242,6 +338,13 @@ public class GameLogic {
         return MoveResult.success("Card reserved successfully.");
     }
 
+    /**
+     * Lets the current player reserve a face-up development card.
+     *
+     * @param level the card tier level
+     * @param index the position of the card in that tier
+     * @return the result of the move
+     */
     public MoveResult reserveFaceUpCard(int level, int index) {
         Player player = getCurrentPlayer();
 
@@ -261,6 +364,12 @@ public class GameLogic {
         }
     }
 
+    /**
+     * Discards one token of the given color from the current player back to the bank.
+     *
+     * @param color the token color to discard
+     * @return the result of the move
+     */
     public MoveResult discardToken(String color) {
         Player player = getCurrentPlayer();
         color = color.toUpperCase();
@@ -274,10 +383,22 @@ public class GameLogic {
         }
     }
 
+    /**
+     * Checks whether the current player has more than 10 tokens and must discard.
+     *
+     * @return true if the player must discard, false otherwise
+     */
     public boolean needsDiscard() {
         return getCurrentPlayer().totalTokens() > 10;
     }
 
+    /**
+     * Ends the current player's turn if all end-of-turn conditions are satisfied.
+     * A player cannot end their turn while they still need to choose a noble
+     * or while they have more than 10 tokens.
+     *
+     * @return the result of ending the turn
+     */    
     public MoveResult endTurn() {
         if (waitingForNobleChoice) {
             return MoveResult.fail("Player must choose a noble first.");
@@ -304,7 +425,13 @@ public class GameLogic {
         return finishResult;
     }
 
-
+    /**
+     * Determines the winner or winners of the game.
+     * The player with the most points wins. If players are tied on points,
+     * the one with fewer development cards wins. If still tied, all tied players are returned.
+     *
+     * @return the list of winners
+     */
     public List<Player> determineWinners() {
         ArrayList<Player> winner = new ArrayList<>();
 
@@ -325,8 +452,14 @@ public class GameLogic {
         return winner;
     }
 
-
-
+    /**
+     * Awards a noble to the player if they are eligible.
+     * If the player qualifies for only one noble, it is awarded automatically.
+     * If they qualify for multiple nobles, they must choose one.
+     *
+     * @param player the player being checked
+     * @return a message describing the awarded noble, or null if none was awarded yet
+     */
     private String awardNobleIfAny(Player player) {
         ArrayList<Noble> eligible = nobleService.getEligibleNobles(player, nobleFaceUp);
 
@@ -348,6 +481,12 @@ public class GameLogic {
         return null;
     }
 
+    /**
+     * Lets the current player choose one noble from the pending noble choices.
+     *
+     * @param index the index of the noble to choose
+     * @return the result of the move
+     */
     public MoveResult chooseNoble(int index) {
         if (!waitingForNobleChoice) {
             return MoveResult.fail("No noble choice is pending.");
@@ -369,15 +508,25 @@ public class GameLogic {
         return MoveResult.success(player.getName() + " attracted noble: " + chosen + " " + finishResult.getMessage());
     }
 
+    /**
+     * Finishes the current player's turn and advances the game state.
+     * This includes triggering the final round, moving to the next player,
+     * and ending the game once the final round is complete.
+     *
+     * @param player the player whose turn is ending
+     * @return the result of finishing the turn
+     */
     private MoveResult finishTurn(Player player) {
         boolean reachedWinningCondition = player.getPoints() >= winningCondition;
 
+        // triger final round once a player reaches winning condition
         if (reachedWinningCondition && !lastRoundTriggered) {
             lastRoundTriggered = true;
         }
 
         boolean endOfRound = (currentPlayerIndex == players.size() - 1);
 
+        // game ends after the full round is completed (all players had the same # of turns)
         if (endOfRound) {
             if (lastRoundTriggered) {
                 gameOver = true;
@@ -396,7 +545,11 @@ public class GameLogic {
         return MoveResult.success("Turn ended.");
     }
 
-
+    /**
+     * Lets the current player take one gold token from the bank.
+     *
+     * @return the result of the move
+     */
     public MoveResult takeGold() {
         Player player = getCurrentPlayer();
 
@@ -414,7 +567,12 @@ public class GameLogic {
     }
 
 
-
+    /**
+     * Checks whether the given color is a valid non-gold token color.
+     *
+     * @param c the color to check
+     * @return true if the color can be taken normally, false otherwise
+     */
     private boolean isTakeColor(String c) {
         for (String color : TAKE_COLORS) {
             if (color.equals(c)) return true;
@@ -422,8 +580,13 @@ public class GameLogic {
         return false;
     }
 
-
-    //cheater method
+    /**
+     * Debug method that gives bonus points of a chosen color to the current player.
+     *
+     * @param color the bonus color to grant
+     * @param amount the number of bonuses to grant
+     * @return the result of the debug action
+     */
     public MoveResult debugGrantBonus(String color, int amount) {
         Player player = getCurrentPlayer();
         color = color.toUpperCase();

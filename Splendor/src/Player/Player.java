@@ -211,7 +211,6 @@ public class Player {
     }
 
 
-// (Added)
     /**
      * Returns all reserve cards reserved by player
      * @return Arraylist of DevelopmentCard objects reserved by the player
@@ -228,8 +227,13 @@ public class Player {
         return new ArrayList<>(playerDevelopmentCards);
     }
 
-
-// cheater mmethod for quick testing
+    /**
+     * Cheat/debug method for quickly giving player bonuses of a certain color
+     *
+     * @param color the bonus color to add
+     * @param amount the number of bonus cards to add
+     * @throws IllegalArgumentException if the color is not valid
+     */
     public void addBonus(String color, int amount) {
         if (!playerBonuses.containsKey(color)) {
             throw new IllegalArgumentException("Invalid bonus color: " + color);

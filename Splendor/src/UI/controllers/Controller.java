@@ -1,48 +1,54 @@
+// AI-assisted: Parts of this class, including token-action flow, discard popup handling,
+// UI state resets, and end-turn integration, were developed with help from ChatGPT-5.
+// The team reviewed, tested, and modified the final implementation.
 package UI.controllers;
 
 import javafx.animation.AnimationTimer;
-import javafx.fxml.FXML;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
-import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.layout.HBox;
-import javafx.geometry.Pos;
-import javafx.scene.Scene;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.layout.FlowPane;
-import javafx.stage.Modality;
-import javafx.stage.Stage;
-import javafx.scene.layout.Region;
+import javafx.animation.PauseTransition;
 import javafx.animation.RotateTransition;
 import javafx.animation.ScaleTransition;
 import javafx.animation.TranslateTransition;
-import javafx.util.Duration;
 import javafx.application.Platform;
+import javafx.fxml.FXML;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.FlowPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
+import javafx.util.Duration;
 
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-import Cards.Token.TokenBank;
 import Cards.DevelopmentCard.DevelopmentCard;
-import UI.components.BoardView;
-import UI.components.CardView;
+import Cards.Noble.Noble;
+import Cards.Token.TokenBank;
+import Player.Computer;
+import Player.ComputerService;
 import Player.Player;
 import Test.GameLogic;
 import Test.MoveResult;
-import Cards.Noble.Noble;
-import Player.Computer;
-import Player.ComputerService;
-import javafx.animation.PauseTransition;
+import UI.components.BoardView;
+import UI.components.CardView;
 
 /**
  * Controls the main game screen and connects the UI to the game logic.
  * This class handles player actions, board interactions, UI updates,
- * popups, background animation, and computer turns.
+ * popups, background animation, discard flow, and computer turns.
  */
 public class Controller {
 
@@ -96,7 +102,6 @@ public class Controller {
     // Current player stats and info
     @FXML private Label pointsLabel;
     @FXML private VBox currentPlayerTokensBox;
-
     @FXML private Button viewReservedButton;
     @FXML private Button viewBoughtButton;
     @FXML private Button viewNobleButton;
@@ -112,6 +117,12 @@ public class Controller {
     // Main board UI component and backend game logic
     private BoardView boardView;
     private GameLogic gameLogic;
+
+    // Discard popup UI state
+    private Stage discardPopupStage;
+    private Label discardPopupInfoLabel;
+    private final Map<String, Label> discardCountLabels = new HashMap<>();
+    private final Map<String, Button> discardButtons = new HashMap<>();
 
     /**
      * Tracks the player's current main action selection.
@@ -144,7 +155,6 @@ public class Controller {
     private boolean winnerPopupShown = false;
 
     private static final double BASE_W = 1400;
-    private static final double BASE_H = 900;
 
     // Cloud movement speeds in pixels per second
     private static final double LAYER1_SPEED = 10.0;
@@ -177,14 +187,16 @@ public class Controller {
 
         // Connect board clicks to controller handlers
         boardView.setOnFaceUpCardClick((tier, index) -> handleFaceUpCardClick(tier, index));
-        boardView.setOnTopDeckClick(tier -> handleTopDeckClick(tier));
-        boardView.setOnNobleClick(index -> handleNobleClick(index));
+        boardView.setOnTopDeckClick(this::handleTopDeckClick);
+        boardView.setOnNobleClick(this::handleNobleClick);
 
         // Debug shortcuts for quickly granting bonuses during testing
         root.sceneProperty().addListener((obs, oldScene, newScene) -> {
             if (newScene != null) {
                 newScene.setOnKeyPressed(e -> {
-                    if (gameLogic == null) return;
+                    if (gameLogic == null) {
+                        return;
+                    }
 
                     switch (e.getCode()) {
                         case DIGIT1 -> updateStatus(gameLogic.debugGrantBonus(TokenBank.WHITE, 1));
@@ -192,7 +204,9 @@ public class Controller {
                         case DIGIT3 -> updateStatus(gameLogic.debugGrantBonus(TokenBank.GREEN, 1));
                         case DIGIT4 -> updateStatus(gameLogic.debugGrantBonus(TokenBank.RED, 1));
                         case DIGIT5 -> updateStatus(gameLogic.debugGrantBonus(TokenBank.BLACK, 1));
-                        default -> { return; }
+                        default -> {
+                            return;
+                        }
                     }
 
                     refreshFromGameLogic();
@@ -310,6 +324,13 @@ public class Controller {
             return;
         }
 
+        if (gameLogic.isDiscardMode()) {
+            updateStatus(MoveResult.fail(
+                "You must discard " + gameLogic.getTokensToDiscard() + " more token(s) first."
+            ));
+            return;
+        }
+
         if (turnActionCommitted) {
             updateStatus(MoveResult.fail("You already used your turn action. Press End Turn."));
             return;
@@ -328,7 +349,6 @@ public class Controller {
                 break;
             default:
                 updateStatus(MoveResult.fail("Choose Buy Card or Reserve Card first."));
-                return;
         }
     }
 
@@ -340,6 +360,13 @@ public class Controller {
      */
     private void handleTopDeckClick(int tier) {
         if (gameLogic == null) {
+            return;
+        }
+
+        if (gameLogic.isDiscardMode()) {
+            updateStatus(MoveResult.fail(
+                "You must discard " + gameLogic.getTokensToDiscard() + " more token(s) first."
+            ));
             return;
         }
 
@@ -382,6 +409,15 @@ public class Controller {
         }
 
         MoveResult result = gameLogic.chooseNoble(pendingIndex);
+
+        // Choosing a noble can also finish the turn, so unlock the next player's turn state here.
+        if (didTurnActuallyEnd(result)) {
+            turnActionCommitted = false;
+            currentMode = ActionMode.NONE;
+            resetTokenActionMode();
+            canTakeGoldAfterReserve = false;
+        }
+
         updateStatus(result);
         refreshFromGameLogic();
         maybeShowWinnerPopup();
@@ -397,6 +433,13 @@ public class Controller {
      */
     private void handleReservedCardClick(int reserveIndex, Stage popupStage) {
         if (gameLogic == null) {
+            return;
+        }
+
+        if (gameLogic.isDiscardMode()) {
+            updateStatus(MoveResult.fail(
+                "You must discard " + gameLogic.getTokensToDiscard() + " more token(s) first."
+            ));
             return;
         }
 
@@ -451,7 +494,8 @@ public class Controller {
 
     /**
      * Refreshes all major UI elements from the current game state.
-     * This includes current player info, token counts, button states, and board content.
+     * This includes current player info, token counts, button states, board content,
+     * and discard popup state.
      */
     private void refreshFromGameLogic() {
         if (gameLogic == null) {
@@ -473,6 +517,14 @@ public class Controller {
         updateTokenButtonStates();
         updateActionButtonStates();
         refreshBoardFromGameLogic();
+
+        if (gameLogic.isDiscardMode()) {
+            updateStatus(MoveResult.success(
+                "Discard " + gameLogic.getTokensToDiscard() + " more token(s)."
+            ));
+        }
+
+        syncDiscardPopup();
     }
 
     /**
@@ -541,32 +593,33 @@ public class Controller {
      */
     private void updateStatus(MoveResult result) {
         statusBarLabel.setText(result.getMessage());
+
         if (result.isSuccess()) {
             statusIcon.setText("✓");
             statusBar.setStyle(
-                "-fx-background-color: rgba(75,85,99,0.92);" +
-                "-fx-background-radius: 14 14 0 0;" +
-                "-fx-padding: 0 18 0 18;" +
-                "-fx-border-color: rgba(255,255,255,0.12);" +
-                "-fx-border-width: 1 0 0 0;"
+                "-fx-background-color: rgba(75,85,99,0.92);"
+                    + "-fx-background-radius: 14 14 0 0;"
+                    + "-fx-padding: 0 18 0 18;"
+                    + "-fx-border-color: rgba(255,255,255,0.12);"
+                    + "-fx-border-width: 1 0 0 0;"
             );
         } else {
             statusIcon.setText("✕");
             statusBar.setStyle(
-                "-fx-background-color: rgba(199, 72, 72, 0.92);" +
-                "-fx-background-radius: 14 14 0 0;" +
-                "-fx-padding: 0 18 0 18;" +
-                "-fx-border-color: rgba(255,255,255,0.12);" +
-                "-fx-border-width: 1 0 0 0;"
+                "-fx-background-color: rgba(199, 72, 72, 0.92);"
+                    + "-fx-background-radius: 14 14 0 0;"
+                    + "-fx-padding: 0 18 0 18;"
+                    + "-fx-border-color: rgba(255,255,255,0.12);"
+                    + "-fx-border-width: 1 0 0 0;"
             );
         }
 
         statusIcon.setStyle(
-            "-fx-background-color: rgba(255,255,255,0.22);" +
-            "-fx-background-radius: 999;" +
-            "-fx-text-fill: white;" +
-            "-fx-font-size: 15px;" +
-            "-fx-font-weight: bold;"
+            "-fx-background-color: rgba(255,255,255,0.22);"
+                + "-fx-background-radius: 999;"
+                + "-fx-text-fill: white;"
+                + "-fx-font-size: 15px;"
+                + "-fx-font-weight: bold;"
         );
     }
 
@@ -589,23 +642,28 @@ public class Controller {
     }
 
     /**
-     * Updates the main action button appearance based on whether the player's turn action is already used.
+     * Updates the main action button appearance based on whether the player's turn
+     * is currently locked by a completed action or by discard mode.
      */
     private void updateActionButtonStates() {
+        boolean locked = turnActionCommitted || (gameLogic != null && gameLogic.isDiscardMode());
+
         String enabledStyle = "";
         String lockedStyle =
-            "-fx-opacity: 0.55;" +
-            "-fx-background-color: #999999;" +
-            "-fx-text-fill: #dddddd;";
+            "-fx-opacity: 0.55;"
+                + "-fx-background-color: #999999;"
+                + "-fx-text-fill: #dddddd;";
 
-        takeThreeTokensButton.setStyle(turnActionCommitted ? lockedStyle : enabledStyle);
-        takeTwoTokensButton.setStyle(turnActionCommitted ? lockedStyle : enabledStyle);
-        buyCardButton.setStyle(turnActionCommitted ? lockedStyle : enabledStyle);
-        reserveCardButton.setStyle(turnActionCommitted ? lockedStyle : enabledStyle);
+        takeThreeTokensButton.setStyle(locked ? lockedStyle : enabledStyle);
+        takeTwoTokensButton.setStyle(locked ? lockedStyle : enabledStyle);
+        buyCardButton.setStyle(locked ? lockedStyle : enabledStyle);
+        reserveCardButton.setStyle(locked ? lockedStyle : enabledStyle);
     }
 
     /**
-     * Enables or disables token buttons based on the current bank contents.
+     * Enables or disables token buttons based on the current game state.
+     * During discard mode, buttons are enabled only for token colors the current player owns.
+     * Otherwise, buttons reflect what is available in the shared bank.
      */
     private void updateTokenButtonStates() {
         if (gameLogic == null) {
@@ -613,14 +671,24 @@ public class Controller {
         }
 
         TokenBank bank = gameLogic.getTokenBank();
+        Player currentPlayer = gameLogic.getCurrentPlayer();
+
+        if (gameLogic.isDiscardMode()) {
+            greenBtn.setDisable(currentPlayer.getTokens(TokenBank.GREEN) == 0);
+            whiteBtn.setDisable(currentPlayer.getTokens(TokenBank.WHITE) == 0);
+            blackBtn.setDisable(currentPlayer.getTokens(TokenBank.BLACK) == 0);
+            redBtn.setDisable(currentPlayer.getTokens(TokenBank.RED) == 0);
+            blueBtn.setDisable(currentPlayer.getTokens(TokenBank.BLUE) == 0);
+            goldBtn.setDisable(currentPlayer.getTokens(TokenBank.GOLD) == 0);
+            return;
+        }
 
         greenBtn.setDisable(bank.get(TokenBank.GREEN) == 0);
         whiteBtn.setDisable(bank.get(TokenBank.WHITE) == 0);
         blackBtn.setDisable(bank.get(TokenBank.BLACK) == 0);
         redBtn.setDisable(bank.get(TokenBank.RED) == 0);
         blueBtn.setDisable(bank.get(TokenBank.BLUE) == 0);
-
-        goldBtn.setDisable(bank.get(TokenBank.GOLD) == 0);
+        goldBtn.setDisable(bank.get(TokenBank.GOLD) == 0 && !canTakeGoldAfterReserve);
     }
 
     /* ------------------------------------ Popup Windows ------------------------------------ */
@@ -797,47 +865,47 @@ public class Controller {
 
         Label yayLabel = new Label("YAYYYY");
         yayLabel.setStyle(
-            "-fx-text-fill: #fff7b2;" +
-            "-fx-font-size: 42px;" +
-            "-fx-font-weight: bold;"
+            "-fx-text-fill: #fff7b2;"
+                + "-fx-font-size: 42px;"
+                + "-fx-font-weight: bold;"
         );
 
         Label winnerLabel = new Label(winnerName + " HAS WON!");
         winnerLabel.setStyle(
-            "-fx-text-fill: white;" +
-            "-fx-font-size: 28px;" +
-            "-fx-font-weight: bold;"
+            "-fx-text-fill: white;"
+                + "-fx-font-size: 28px;"
+                + "-fx-font-weight: bold;"
         );
 
         Label subLabel = new Label("Thanks for playing! :)");
         subLabel.setStyle(
-            "-fx-text-fill: #fde68a;" +
-            "-fx-font-size: 18px;"
+            "-fx-text-fill: #fde68a;"
+                + "-fx-font-size: 18px;"
         );
 
         Button closeBtn = new Button("quit");
         closeBtn.setOnAction(e -> Platform.exit());
         closeBtn.setStyle(
-            "-fx-font-size: 16px;" +
-            "-fx-font-weight: bold;" +
-            "-fx-background-radius: 16;" +
-            "-fx-padding: 8 18 8 18;"
+            "-fx-font-size: 16px;"
+                + "-fx-font-weight: bold;"
+                + "-fx-background-radius: 16;"
+                + "-fx-padding: 8 18 8 18;"
         );
 
         VBox popupBox = new VBox(16, confettiLabel, yayLabel, winnerLabel, subLabel, closeBtn);
         popupBox.setAlignment(Pos.CENTER);
         popupBox.setStyle(
-            "-fx-background-color: linear-gradient(to bottom, #6320ff, #ff4dd8);" +
-            "-fx-background-radius: 26;" +
-            "-fx-padding: 28;"
+            "-fx-background-color: linear-gradient(to bottom, #6320ff, #ff4dd8);"
+                + "-fx-background-radius: 26;"
+                + "-fx-padding: 28;"
         );
         popupBox.setPrefWidth(430);
 
         StackPane overlay = new StackPane(popupBox);
         overlay.setAlignment(Pos.CENTER);
         overlay.setStyle(
-            "-fx-background-color: rgba(15,23,42,0.72);" +
-            "-fx-padding: 24;"
+            "-fx-background-color: rgba(15,23,42,0.72);"
+                + "-fx-padding: 24;"
         );
 
         Scene scene = new Scene(overlay, 700, 450);
@@ -869,6 +937,222 @@ public class Controller {
         floaty.play();
     }
 
+    /* ------------------------------------ Discard Popup Helpers ------------------------------------ */
+
+    /**
+     * Opens, updates, or closes the discard popup based on the current game state.
+     * The popup is only shown for human players while they must discard tokens.
+     */
+    private void syncDiscardPopup() {
+        if (gameLogic == null) {
+            return;
+        }
+
+        if (gameLogic.getCurrentPlayer() instanceof Computer) {
+            closeDiscardPopup();
+            return;
+        }
+
+        if (gameLogic.isDiscardMode()) {
+            if (discardPopupStage == null || !discardPopupStage.isShowing()) {
+                showDiscardPopup();
+            }
+            updateDiscardPopup();
+        } else {
+            closeDiscardPopup();
+        }
+    }
+
+    /**
+     * Shows the discard popup window for the current player.
+     * The popup displays each token color horizontally with its current inventory count.
+     */
+    private void showDiscardPopup() {
+        discardCountLabels.clear();
+        discardButtons.clear();
+
+        discardPopupStage = new Stage();
+        discardPopupStage.initOwner(root.getScene().getWindow());
+        discardPopupStage.initModality(Modality.APPLICATION_MODAL);
+        discardPopupStage.setTitle("Discard Tokens");
+
+        discardPopupStage.setOnCloseRequest(e -> {
+            if (gameLogic != null && gameLogic.isDiscardMode()) {
+                e.consume();
+            }
+        });
+
+        Label titleLabel = new Label("Discard tokens");
+        titleLabel.setStyle(
+            "-fx-text-fill: white;"
+                + "-fx-font-size: 22px;"
+                + "-fx-font-weight: bold;"
+        );
+
+        discardPopupInfoLabel = new Label();
+        discardPopupInfoLabel.setStyle(
+            "-fx-text-fill: #e5e7eb;"
+                + "-fx-font-size: 16px;"
+        );
+
+        HBox tokenRow = new HBox(18);
+        tokenRow.setAlignment(Pos.CENTER);
+
+        tokenRow.getChildren().addAll(
+            createDiscardTokenNode(TokenBank.GOLD, "gold.png"),
+            createDiscardTokenNode(TokenBank.GREEN, "greenGem.png"),
+            createDiscardTokenNode(TokenBank.WHITE, "whiteGem.png"),
+            createDiscardTokenNode(TokenBank.BLACK, "blackGem.png"),
+            createDiscardTokenNode(TokenBank.RED, "redGem.png"),
+            createDiscardTokenNode(TokenBank.BLUE, "blueGem.png")
+        );
+
+        VBox layout = new VBox(18, titleLabel, discardPopupInfoLabel, tokenRow);
+        layout.setAlignment(Pos.CENTER);
+        layout.setPadding(new Insets(24));
+        layout.setStyle(
+            "-fx-background-color: #1f2937;"
+                + "-fx-background-radius: 18;"
+        );
+
+        StackPane rootPane = new StackPane(layout);
+        rootPane.setPadding(new Insets(20));
+        rootPane.setStyle("-fx-background-color: rgba(15,23,42,0.75);");
+
+        Scene scene = new Scene(rootPane, 760, 280);
+        discardPopupStage.setScene(scene);
+        discardPopupStage.show();
+
+        updateDiscardPopup();
+    }
+
+    /**
+     * Creates one token entry for the discard popup.
+     * Each entry shows a clickable token button, the player's count, and the color label.
+     *
+     * @param color the token color represented by this popup entry
+     * @param imageFile the image file used for the token icon
+     * @return the UI node for this token entry
+     */
+    private VBox createDiscardTokenNode(String color, String imageFile) {
+        ImageView imageView = new ImageView(loadTokenImage(imageFile));
+        imageView.setFitWidth(56);
+        imageView.setFitHeight(56);
+        imageView.setPreserveRatio(true);
+
+        Button tokenButton = new Button();
+        tokenButton.setGraphic(imageView);
+        tokenButton.setMinSize(76, 76);
+        tokenButton.setPrefSize(76, 76);
+        tokenButton.setMaxSize(76, 76);
+        tokenButton.setStyle(
+            "-fx-background-color: rgba(255,255,255,0.10);"
+                + "-fx-background-radius: 999;"
+                + "-fx-border-color: rgba(255,255,255,0.20);"
+                + "-fx-border-radius: 999;"
+                + "-fx-cursor: hand;"
+        );
+        tokenButton.setOnAction(e -> handleDiscard(color));
+
+        Label countLabel = new Label("0");
+        countLabel.setStyle(
+            "-fx-text-fill: white;"
+                + "-fx-font-size: 16px;"
+                + "-fx-font-weight: bold;"
+        );
+
+        Label nameLabel = new Label(color);
+        nameLabel.setStyle(
+            "-fx-text-fill: #cbd5e1;"
+                + "-fx-font-size: 12px;"
+        );
+
+        discardButtons.put(color, tokenButton);
+        discardCountLabels.put(color, countLabel);
+
+        VBox box = new VBox(8, tokenButton, countLabel, nameLabel);
+        box.setAlignment(Pos.CENTER);
+        return box;
+    }
+
+    /**
+     * Discards one token of the given color for the current player.
+     * This updates the main UI, the status bar, and closes the popup when discarding is complete.
+     *
+     * @param color the token color to discard
+     */
+    private void handleDiscard(String color) {
+        if (gameLogic == null || !gameLogic.isDiscardMode()) {
+            return;
+        }
+
+        MoveResult result = gameLogic.discardToken(color);
+        refreshFromGameLogic();
+        updateStatus(result);
+
+        if (result.isSuccess() && !gameLogic.isDiscardMode()) {
+            updateStatus(MoveResult.success(result.getMessage() + " Press End Turn when ready."));
+        }
+    }
+
+    /**
+     * Refreshes the discard popup so it shows the latest discard requirement
+     * and the current player's token counts.
+     */
+    private void updateDiscardPopup() {
+        if (gameLogic == null || discardPopupStage == null || !discardPopupStage.isShowing()) {
+            return;
+        }
+
+        Player player = gameLogic.getCurrentPlayer();
+
+        discardPopupInfoLabel.setText(
+            "Discard " + gameLogic.getTokensToDiscard() + " more token(s)"
+        );
+
+        updateDiscardPopupToken(TokenBank.GOLD, player.getTokens(TokenBank.GOLD));
+        updateDiscardPopupToken(TokenBank.GREEN, player.getTokens(TokenBank.GREEN));
+        updateDiscardPopupToken(TokenBank.WHITE, player.getTokens(TokenBank.WHITE));
+        updateDiscardPopupToken(TokenBank.BLACK, player.getTokens(TokenBank.BLACK));
+        updateDiscardPopupToken(TokenBank.RED, player.getTokens(TokenBank.RED));
+        updateDiscardPopupToken(TokenBank.BLUE, player.getTokens(TokenBank.BLUE));
+    }
+
+    /**
+     * Updates one token entry in the discard popup.
+     * The button is disabled when the player has none of that token color.
+     *
+     * @param color the token color being updated
+     * @param count the player's current number of tokens of that color
+     */
+    private void updateDiscardPopupToken(String color, int count) {
+        Label countLabel = discardCountLabels.get(color);
+        Button button = discardButtons.get(color);
+
+        if (countLabel != null) {
+            countLabel.setText(String.valueOf(count));
+        }
+
+        if (button != null) {
+            button.setDisable(count == 0);
+            button.setOpacity(count == 0 ? 0.45 : 1.0);
+        }
+    }
+
+    /**
+     * Closes the discard popup and clears its cached UI references.
+     */
+    private void closeDiscardPopup() {
+        if (discardPopupStage != null) {
+            discardPopupStage.close();
+            discardPopupStage = null;
+        }
+
+        discardButtons.clear();
+        discardCountLabels.clear();
+        discardPopupInfoLabel = null;
+    }
+
     /* ------------------------------------ Computer Turn Logic ------------------------------------ */
 
     /**
@@ -890,16 +1174,20 @@ public class Controller {
             updateStatus(actionResult);
             refreshFromGameLogic();
 
-            // After reserving, let the computer take gold if gold is available
-            if (gameLogic.getCurrentPlayer() instanceof Computer
-                    && currentMode == ActionMode.RESERVE_CARD
-                    && canTakeGoldAfterReserve) {
+            resolveComputerDiscardIfNeeded();
 
+            boolean computerReservedCard = actionResult.isSuccess()
+                && actionResult.getMessage() != null
+                && actionResult.getMessage().toLowerCase().contains("reserved");
+
+            // After reserving, let the computer take gold if gold is available
+            if (computerReservedCard && gameLogic.getTokenBank().get(TokenBank.GOLD) > 0) {
                 PauseTransition goldPause = new PauseTransition(Duration.millis(2000));
                 goldPause.setOnFinished(e2 -> {
                     MoveResult goldResult = gameLogic.takeGold();
                     updateStatus(goldResult);
                     refreshFromGameLogic();
+                    resolveComputerDiscardIfNeeded();
                     runComputerEndTurn();
                 });
                 goldPause.play();
@@ -907,6 +1195,7 @@ public class Controller {
                 runComputerEndTurn();
             }
         });
+
         updateStatus(MoveResult.success("Computer is thinking..."));
         actionPause.play();
     }
@@ -939,6 +1228,44 @@ public class Controller {
             maybeRunComputerTurn();
         });
         endPause.play();
+    }
+
+    /**
+     * Resolves the computer player's discard requirement automatically.
+     * The computer discards one token at a time until it is no longer over the token limit.
+     */
+    private void resolveComputerDiscardIfNeeded() {
+        if (gameLogic == null || !(gameLogic.getCurrentPlayer() instanceof Computer)) {
+            return;
+        }
+
+        Player player = gameLogic.getCurrentPlayer();
+        String[] discardOrder = {
+            TokenBank.GOLD,
+            TokenBank.GREEN,
+            TokenBank.WHITE,
+            TokenBank.BLACK,
+            TokenBank.RED,
+            TokenBank.BLUE
+        };
+
+        while (gameLogic.isDiscardMode()) {
+            boolean discarded = false;
+
+            for (String color : discardOrder) {
+                if (player.getTokens(color) > 0) {
+                    gameLogic.discardToken(color);
+                    discarded = true;
+                    break;
+                }
+            }
+
+            if (!discarded) {
+                break;
+            }
+        }
+
+        refreshFromGameLogic();
     }
 
     /* ------------------------------------ Background Setup ------------------------------------ */
@@ -1045,7 +1372,9 @@ public class Controller {
                 last = now;
 
                 double w = root.getWidth();
-                if (w <= 0) return;
+                if (w <= 0) {
+                    return;
+                }
 
                 scrollPair(gameCloud1A, gameCloud1B, LAYER1_SPEED * dt, w);
                 scrollPair(gameCloud2A, gameCloud2B, LAYER2_SPEED * dt, w);
@@ -1217,17 +1546,23 @@ public class Controller {
 
     /**
      * Handles clicks on a non-gold token button.
-     * The result depends on the currently selected token action mode.
+     * During discard mode, the clicked token is discarded immediately.
+     * Otherwise, the click is treated as part of the current token-taking action.
      *
      * @param color the clicked token color
      */
     private void handleTokenClick(String color) {
-        if (turnActionCommitted) {
-            updateStatus(MoveResult.fail("You already used your turn action. Press End Turn."));
+        if (gameLogic == null) {
             return;
         }
 
-        if (gameLogic == null) {
+        if (gameLogic.isDiscardMode()) {
+            handleDiscard(color);
+            return;
+        }
+
+        if (turnActionCommitted) {
+            updateStatus(MoveResult.fail("You already used your turn action. Press End Turn."));
             return;
         }
 
@@ -1239,7 +1574,8 @@ public class Controller {
         switch (tokenActionMode) {
             case TAKE_THREE -> handleTakeThreeSelection(color);
             case TAKE_TWO_SAME -> handleTakeTwoSameSelection(color);
-            default -> {}
+            default -> {
+            }
         }
     }
 
@@ -1300,7 +1636,11 @@ public class Controller {
         turnActionCommitted = true;
         refreshFromGameLogic();
 
-        updateStatus(MoveResult.success(result.getMessage() + " Press End Turn when ready."));
+        if (gameLogic.isDiscardMode()) {
+            updateStatus(result);
+        } else {
+            updateStatus(MoveResult.success(result.getMessage() + " Press End Turn when ready."));
+        }
     }
 
     /**
@@ -1370,10 +1710,17 @@ public class Controller {
     }
 
     /**
-     * Handles taking a gold token after a successful reserve action.
+     * Handles clicking the gold token button.
+     * During discard mode, clicking gold discards a gold token.
+     * Otherwise, gold may only be taken after a successful reserve action.
      */
     private void handleGoldTokenClick() {
         if (gameLogic == null) {
+            return;
+        }
+
+        if (gameLogic.isDiscardMode()) {
+            handleDiscard(TokenBank.GOLD);
             return;
         }
 
@@ -1394,19 +1741,32 @@ public class Controller {
         currentMode = ActionMode.NONE;
         refreshFromGameLogic();
 
-        updateStatus(MoveResult.success(result.getMessage() + " Press End Turn when ready."));
+        if (gameLogic.isDiscardMode()) {
+            updateStatus(result);
+        } else {
+            updateStatus(MoveResult.success(result.getMessage() + " Press End Turn when ready."));
+        }
     }
 
     /**
-     * Checks whether the player has already used their main action this turn.
+     * Checks whether the player has already used their main action this turn
+     * or must complete discarding before choosing a new action.
      *
      * @return true if the turn is locked for a new action, false otherwise
      */
     private boolean isTurnLockedForNewAction() {
+        if (gameLogic != null && gameLogic.isDiscardMode()) {
+            updateStatus(MoveResult.fail(
+                "You must discard " + gameLogic.getTokensToDiscard() + " more token(s) first."
+            ));
+            return true;
+        }
+
         if (turnActionCommitted) {
             updateStatus(MoveResult.fail("You already used your turn action. Press End Turn."));
             return true;
         }
+
         return false;
     }
 }

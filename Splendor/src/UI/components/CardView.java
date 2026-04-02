@@ -1,3 +1,6 @@
+// AI-assisted: Parts of this class, including card image loading and click interaction logic,
+// were developed with help from ChatGPT.
+// The team reviewed, tested, and modified the final implementation.
 package UI.components;
 
 import javafx.animation.ScaleTransition;

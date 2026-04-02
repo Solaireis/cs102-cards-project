@@ -1,3 +1,6 @@
+// AI-assisted: Parts of this class, including noble eligibility and noble-awarding logic,
+// were developed with help from ChatGPT-5, using NobleAttractService.java as an original reference.
+// The team reviewed, tested, and modified the final implementation.
 package Player;
 
 import Cards.Noble.Noble;

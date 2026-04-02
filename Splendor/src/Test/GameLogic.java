@@ -1,3 +1,6 @@
+// AI-assisted: Parts of this class, including token-taking, discard-mode handling,
+// noble selection flow, and final-round/end-turn logic, were developed with help from ChatGPT-5 referencing Game.java and some other partial classes.
+// The team reviewed, tested, and modified the final implementation.
 package Test;
 
 import Cards.DevelopmentCard.*;
@@ -36,6 +39,8 @@ public class GameLogic {
     private int turnNumber = 1;
     private boolean gameOver = false;
     private boolean lastRoundTriggered = false;
+    private boolean discardMode = false;                                                    //tracks whether current player is forced to discard tokens (>10 tokens)
+    private int tokensToDiscard = 0;                                                        //stores how many more tokens player still needs to discard
 
 
     /**
@@ -167,15 +172,15 @@ public class GameLogic {
      * @return the result of the move
      */
     public MoveResult takeThreeTokens(String a, String b, String c) {
+        if (discardMode) {
+            return MoveResult.fail("You must discard tokens first.");
+        }
+
         Player player = getCurrentPlayer();
 
         a = a.toUpperCase();
         b = b.toUpperCase();
         c = c.toUpperCase();
-
-        if (player.totalTokens() + 3 > 10) {
-            return MoveResult.fail("You cannot take 3 tokens because you would exceed 10 tokens.");
-        }
 
         HashSet<String> set = new HashSet<>();
         set.add(a);
@@ -204,7 +209,9 @@ public class GameLogic {
             player.addTokens(color, 1);
         }
 
-        return MoveResult.success(player.getName() +  " took 3 tokens: " + a + ", " + b + ", " + c + ".");
+        return checkDiscardAfterTake(
+            player.getName() + " took 3 tokens: " + a + ", " + b + ", " + c + "."
+        );
     }
 
     /**
@@ -215,12 +222,12 @@ public class GameLogic {
      * @return the result of the move
      */    
     public MoveResult takeTwoTokens(String color) {
+        if (discardMode) {
+            return MoveResult.fail("You must discard tokens first.");
+        }
+
         Player player = getCurrentPlayer();
         color = color.toUpperCase();
-
-        if (player.totalTokens() + 2 > 10) {
-            return MoveResult.fail("You cannot take 2 tokens because you would exceed 10 tokens.");
-        }
 
         if (color.equals(TokenBank.GOLD)) {
             return MoveResult.fail("You cannot take GOLD using this action.");
@@ -237,7 +244,9 @@ public class GameLogic {
         tokenBank.remove(color, 2);
         player.addTokens(color, 2);
 
-        return MoveResult.success(player.getName() + " has taken 2 " + color + " tokens.");
+        return checkDiscardAfterTake(
+            player.getName() + " has taken 2 " + color + " tokens."
+        );
     }
 
     /**
@@ -248,6 +257,10 @@ public class GameLogic {
      * @return the result of the move
      */
     public MoveResult buyMarketCard(int level, int index) {
+        if (discardMode) {
+            return MoveResult.fail("You must discard tokens first.");
+        }
+
         Player player = getCurrentPlayer();
 
         try {
@@ -273,6 +286,10 @@ public class GameLogic {
      * @return the result of the move
      */
     public MoveResult buyReservedCard(int reserveIndex) {
+        if (discardMode) {
+            return MoveResult.fail("You must discard tokens first.");
+        }
+
         Player player = getCurrentPlayer();
 
         if (player.totalReserves() == 0) {
@@ -302,6 +319,10 @@ public class GameLogic {
      * @return the result of the move
      */
     public MoveResult reserveTopDeckCard(int level) {
+        if (discardMode) {
+            return MoveResult.fail("You must discard tokens first.");
+        }
+
         Player player = getCurrentPlayer();
 
         if (player.totalReserves() == 3) {
@@ -346,6 +367,10 @@ public class GameLogic {
      * @return the result of the move
      */
     public MoveResult reserveFaceUpCard(int level, int index) {
+        if (discardMode) {
+            return MoveResult.fail("You must discard tokens first.");
+        }
+
         Player player = getCurrentPlayer();
 
         if (player.totalReserves() == 3) {
@@ -364,24 +389,6 @@ public class GameLogic {
         }
     }
 
-    /**
-     * Discards one token of the given color from the current player back to the bank.
-     *
-     * @param color the token color to discard
-     * @return the result of the move
-     */
-    public MoveResult discardToken(String color) {
-        Player player = getCurrentPlayer();
-        color = color.toUpperCase();
-
-        try {
-            player.removeTokens(color, 1);
-            tokenBank.add(color, 1);
-            return MoveResult.success("Discarded 1 " + color + ".");
-        } catch (Exception e) {
-            return MoveResult.fail("Cannot discard " + color + ".");
-        }
-    }
 
     /**
      * Checks whether the current player has more than 10 tokens and must discard.
@@ -400,6 +407,10 @@ public class GameLogic {
      * @return the result of ending the turn
      */    
     public MoveResult endTurn() {
+        if (discardMode) {
+            return MoveResult.fail("You must finish discarding first.");
+        }
+
         if (waitingForNobleChoice) {
             return MoveResult.fail("Player must choose a noble first.");
         }
@@ -551,6 +562,10 @@ public class GameLogic {
      * @return the result of the move
      */
     public MoveResult takeGold() {
+        if (discardMode) {
+            return MoveResult.fail("You must discard tokens first.");
+        }
+
         Player player = getCurrentPlayer();
 
         if (player.totalTokens() + 1 > 10) {
@@ -597,6 +612,86 @@ public class GameLogic {
         );
     }
 
+    /**
+     * Discards one token of the given color from the current player back to the bank.
+     *
+     * @param color the token color to discard
+     * @return the result of the move
+     */
+    public MoveResult discardToken(String color) {
+        if (!discardMode) {
+            return MoveResult.fail("You do not need to discard.");
+        }
+
+        Player player = getCurrentPlayer();
+        color = color.toUpperCase();
+
+        if (color.equals(TokenBank.GOLD) || !isTakeColor(color) && !color.equals(TokenBank.GOLD)) {
+            return MoveResult.fail("Invalid color: " + color);
+        }
+
+        try {
+            player.removeTokens(color, 1);
+            tokenBank.add(color, 1);
+            tokensToDiscard--;
+
+            if (tokensToDiscard <= 0) {
+                discardMode = false;
+                tokensToDiscard = 0;
+                return MoveResult.success("Discard complete. You may now end your turn.");
+            }
+
+            return MoveResult.success(
+                "Discarded 1 " + color + ". " + tokensToDiscard + " more token(s) to discard."
+            );
+        } catch (Exception e) {
+            return MoveResult.fail("You do not have any " + color + " token to discard.");
+        }
+    }
+
+    /**
+     * Checks whether the current player must discard tokens after taking tokens.
+     * If the player now has more than 10 total tokens, discard mode is activated
+     * and the number of required discards is recorded.
+     *
+     * @param successMessage the message describing the successful token-taking action
+     * @return a success result describing either the discard requirement or the completed action
+     */
+    private MoveResult checkDiscardAfterTake(String successMessage) {
+        Player player = getCurrentPlayer();
+        int total = player.totalTokens();
+
+        if (total > 10) {
+            discardMode = true;
+            tokensToDiscard = total - 10;
+            return MoveResult.success(
+                successMessage + " You must now discard " + tokensToDiscard + " token(s)."
+            );
+        }
+
+        return successMessage == null
+            ? MoveResult.success("Tokens taken successfully.")
+            : MoveResult.success(successMessage);
+    }
+
+    /**
+     * Returns whether the current player is in discard mode.
+     * Discard mode means the player must discard tokens before continuing or ending the turn.
+     *
+     * @return true if the player must discard tokens, false otherwise
+     */   
+    public boolean isDiscardMode() {
+        return discardMode;
+    }
+
+    /**
+     * Returns how many more tokens the current player must discard.
+     *
+     * @return the number of tokens still required to be discarded
+     */    
+    public int getTokensToDiscard() {
+        return tokensToDiscard;
+    }
 
 
 }

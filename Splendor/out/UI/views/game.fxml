@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<!--
+AI-assisted: Significant parts of this file, including layout structure,
+component arrangement, and UI integration for the game screen, were developed
+with help from ChatGPT. The team reviewed, tested, and modified the final version.
+-->
+
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.geometry.Insets?>

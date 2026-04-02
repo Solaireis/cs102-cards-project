@@ -1,3 +1,6 @@
+// AI-assisted: Parts of this class, including menu UI behavior,
+// animated background/cloud setup, and event-handling logic, were developed
+// with help from ChatGPT. The team reviewed, tested, and modified the final implementation.
 package UI.controllers;
 
 import java.util.ArrayList;

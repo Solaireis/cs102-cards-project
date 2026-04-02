@@ -1,3 +1,6 @@
+// AI-assisted: This class is based primarily on a JavaFX application/template structure.
+// ChatGPT assistance was limited to minor setup and integration guidance.
+// The team reviewed and finalized the implementation.
 package UI;
 
 import javafx.application.Application;

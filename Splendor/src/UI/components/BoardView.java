@@ -1,3 +1,6 @@
+// AI-assisted: Parts of this class, including board rendering, click-handler wiring,
+// and UI update logic, were developed with help from ChatGPT-5.
+// The team reviewed, tested, and modified the final implementation.
 package UI.components;
 
 import java.util.List;

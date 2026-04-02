@@ -1,3 +1,6 @@
+// AI-assisted: Parts of this class, including the computer player's action-selection logic,
+// were developed with help from ChatGPT-5, orignally referenced by Computer.java
+// The team reviewed, tested, and modified the final implementation.
 package Player;
 
 import java.util.ArrayList;

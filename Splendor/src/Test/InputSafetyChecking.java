@@ -48,12 +48,56 @@ public class InputSafetyChecking {
                 System.out.print(prompt);
             }
 
-            int color = safeInt(sc, "Please enter a valid number: ");
-            sc.nextLine();
-            if (color >= minInclusive && color <= maxInclusive) {
-                return color;
+            String line = sc.nextLine().trim();
+            int value;
+            try {
+                value = Integer.parseInt(line);
+            } catch (NumberFormatException e) {
+                System.out.print("Please enter a valid number: ");
+                continue;
+            }
+
+            if (value >= minInclusive && value <= maxInclusive) {
+                return value;
             }
             System.out.print("Invalid choice, try again:");
+        }
+    }
+
+    /**
+     * Returns true if input command == back, false otherwise
+     * 
+     * @param input Input command
+     * @return true if command is back, false otherwise
+     */
+    public static boolean isBackCommand(String input) {
+        return input != null && input.trim().equalsIgnoreCase("back");
+    }
+
+    /**
+     * Returns number if input is valid number and null if command is back
+     * 
+     * @param sc     Scanner
+     * @param prompt Prompt for input
+     * @return number if input is valid number, null if command is back
+     */
+    public static Integer readIntOrBack(Scanner sc, String prompt) {
+        while (true) {
+            if (prompt != null && !prompt.isBlank()) {
+                System.out.print(prompt);
+            }
+
+            String line = sc.nextLine().trim();
+            if (isBackCommand(line)) {
+                return null;
+            }
+
+            try {
+                return Integer.parseInt(line);
+            } catch (NumberFormatException e) {
+                System.out.println("Please enter a valid number or type back.");
+                System.out.println();
+            }
         }
     }
 

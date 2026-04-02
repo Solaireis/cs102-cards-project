@@ -87,7 +87,7 @@ public class Game {
         // numb of players is obtained from properties file
         int numOfPlayers = 0;
 
-        
+
         try{
             Reader reader = new Reader(); // Create an instance of Reader
             winningCondition = reader.getPrestigePointToWin();
@@ -247,8 +247,7 @@ public class Game {
      * @param nobleFaceUp face up noble cards
      * @param developmentFaceUp face up development cards
      */
-    private static void turnDisplay(ArrayList<Player> players, Player player, TokenBank tb, NobleFaceUP nobleFaceUp,
-            DevelopmentCardFaceUP developmentFaceUp) {
+    private static void turnDisplay(ArrayList<Player> players, Player player, TokenBank tb, NobleFaceUP nobleFaceUp, DevelopmentCardFaceUP developmentFaceUp) {
         System.out.println("\n==============================");
         System.out.println("BANK: ");
         tb.printBank();
@@ -273,7 +272,7 @@ public class Game {
 
     //-----------------------------------------------------------------------------------------------------------------
     /**
-     * Returns true when player does not have more than 10 tokens, else prompts user to discard tokens
+     * Returns true when player does not have more than 10 tokens, else prompts user to discard tokens 
      * @param sc Scanner
      * @param player current player
      * @param tb tokenBank
@@ -281,7 +280,11 @@ public class Game {
      */
     private static boolean handleDiscard(Scanner sc, Player player, TokenBank tb) {
         while (player.totalTokens() > 10) {
-            System.out.println("Total tokens exceeded 10. Pick one color to discard: ");
+            int mustDiscard = player.totalTokens() - 10;
+            System.out.println("Total tokens exceeded 10. You must discard " + mustDiscard + " more token(s).");
+            System.out.println("Current tokens: ");
+            printTokenCounts(player);
+            System.out.println("Pick one color to discard: ");
             String color = sc.nextLine().trim().toUpperCase();
             if (!isTokenColor(color)) {
                 System.out.println("Invalid color.");
@@ -293,6 +296,8 @@ public class Game {
             }
             player.removeTokens(color, 1);
             tb.add(color, 1);
+            System.out.println("Discarded 1 " + color + ". Remaining tokens:");
+            printTokenCounts(player);
         }
         return true;
     }
@@ -339,7 +344,7 @@ public class Game {
             System.out.print("> ");
             String input = sc.nextLine();
 
-            if (isBackCommand(input)){
+            if (InputSafetyChecking.isBackCommand(input)) {
                 return false;
             }
 
@@ -375,7 +380,7 @@ public class Game {
 
     //------------------------------------------------------------------------------------------------------------------------------------------------------------------
     /**
-     * Returns true if action to take 2 tokens valid, else false
+     * Returns true if action to take 2 tokens valid, else false 
      * @param sc Scanner
      * @param tb TokenBank
      * @param player Current player
@@ -389,7 +394,7 @@ public class Game {
             System.out.print("> ");
             color = InputSafetyChecking.normalizeUpper(sc.nextLine());
 
-            if (isBackCommand(color)) {
+            if (InputSafetyChecking.isBackCommand(color)) {
                 return false;
             }
 
@@ -455,14 +460,13 @@ public class Game {
      * @param developmentDeck Development cards in remaining deck
      * @return true if action valid, false otherwise
      */
-    private static boolean buyCard(Scanner sc, TokenBank tb, Player player, DevelopmentCardFaceUP developmentFaceUp,
-            DevelopmentCardDeck developmentDeck) {
+    private static boolean buyCard(Scanner sc, TokenBank tb, Player player, DevelopmentCardFaceUP developmentFaceUp, DevelopmentCardDeck developmentDeck) {
         while (true) {
             System.out.println();
             System.out.print("Enter location of card (Reserve / Market) or type back: ");
             String location = sc.nextLine().trim().toLowerCase();
 
-            if (isBackCommand(location)) {
+            if (InputSafetyChecking.isBackCommand(location)) {
                 return false;
             }
 
@@ -476,9 +480,11 @@ public class Game {
                     continue;
                 }
 
+                printReserveCards(player);
+
                 while (true) {
-                    Integer reserveIndex = readIntOrBack(sc,
-                            "Enter index of card (0-" + (player.totalReserves() - 1) + ") or type back: ");
+                    Integer reserveIndex = InputSafetyChecking.readIntOrBack(sc,
+                            "Choose reserve card index (or type back): ");
                     if (reserveIndex == null) {
                         return false;
                     }
@@ -493,7 +499,7 @@ public class Game {
             } else if (location.equals("market")) {
                 while (true) {
                     System.out.println();
-                    Integer levelInput = readIntOrBack(sc, "Choose level (1/2/3) or type back: ");
+                    Integer levelInput = InputSafetyChecking.readIntOrBack(sc, "Choose level (1/2/3) or type back: ");
                     if (levelInput == null) {
                         return false;
                     }
@@ -504,7 +510,7 @@ public class Game {
                         continue;
                     }
 
-                    Integer cardIndex = readIntOrBack(sc, "Choose card index (or type back): ");
+                    Integer cardIndex = InputSafetyChecking.readIntOrBack(sc, "Choose card index (or type back): ");
                     if (cardIndex == null) {
                         return false;
                     }
@@ -567,7 +573,7 @@ public class Game {
             System.out.println("Option b: choose a face up card");
             System.out.print("Your Choice (a/b, or type back): ");
             String reserveLine = sc.nextLine().trim().toLowerCase();
-            if (isBackCommand(reserveLine)) {
+            if (InputSafetyChecking.isBackCommand(reserveLine)) {
                 return false;
             }
             if (reserveLine.isEmpty()) {
@@ -580,7 +586,7 @@ public class Game {
             if (choice == 'a') {
                 while (true) {
                     System.out.println();
-                    Integer levelInput = readIntOrBack(sc, "Enter level (1/2/3) or type back: ");
+                    Integer levelInput = InputSafetyChecking.readIntOrBack(sc, "Enter level (1/2/3) or type back: ");
                     if (levelInput == null) {
                         return false;
                     }
@@ -605,7 +611,7 @@ public class Game {
             } else if (choice == 'b') {
                 while (true) {
                     System.out.println();
-                    Integer levelInput = readIntOrBack(sc, "Choose level (1/2/3) or type back: ");
+                    Integer levelInput = InputSafetyChecking.readIntOrBack(sc, "Choose level (1/2/3) or type back: ");
                     if (levelInput == null) {
                         return false;
                     }
@@ -616,7 +622,7 @@ public class Game {
                         continue;
                     }
 
-                    Integer indexInput = readIntOrBack(sc, "Choose card index (or type back): ");
+                    Integer indexInput = InputSafetyChecking.readIntOrBack(sc, "Choose card index (or type back): ");
                     if (indexInput == null) {
                         return false;
                     }
@@ -650,6 +656,50 @@ public class Game {
         }
     }
 
+    /**
+     * Prints all reserve cards of player with index labels.
+     * 
+     * @param player current player
+     */
+    private static void printReserveCards(Player player) {
+        ArrayList<DevelopmentCard> reserves = player.getReservedCards();
+        if (reserves.size() == 0) {
+            System.out.println("No reserve cards.");
+            return;
+        }
+
+        System.out.println("=== Your Reserve Cards ===");
+
+        String[] colors = { "BLACK", "WHITE", "RED", "BLUE", "GREEN" };
+        String[][] matrix = new String[9][reserves.size()];
+
+        for (int i = 0; i < reserves.size(); i++) {
+            matrix[0][i] = "Index " + i;
+            matrix[1][i] = "--------------";
+            matrix[2][i] = String.format("| %dpt %6s |", reserves.get(i).getPoints(), reserves.get(i).getBonus());
+            matrix[8][i] = "--------------";
+            int point = 7;
+            for (String color : colors) {
+                if (reserves.get(i).getCost(color) != 0) {
+                    matrix[point][i] = String.format("| %-6s= %-3d|", color, reserves.get(i).getCost(color));
+                    point -= 1;
+                }
+            }
+            while (point != 2) {
+                matrix[point][i] = "|            |";
+                point -= 1;
+            }
+        }
+
+        for (String[] rows : matrix) {
+            for (String val : rows) {
+                System.out.printf("%-17s", val);
+            }
+            System.out.println();
+        }
+        System.out.println();
+    }
+
     // --------------------------------------------------------------------------------------------------------
     /**
      * Returns true if input color is a token color, false otherwise
@@ -667,37 +717,18 @@ public class Game {
     }
 
     /**
-     * Returns true if input command == back, false otherwise
-     * @param input Input command
-     * @return true if command is back, false otherwise
+     * Prints a detailed token informations for the player.
+     * 
+     * @param player current player
      */
-    private static boolean isBackCommand(String input) {
-        return input != null && input.trim().equalsIgnoreCase("back");
+    private static void printTokenCounts(Player player) {
+        System.out.println("WHITE=" + player.getTokens(TokenBank.WHITE)
+                + " BLUE=" + player.getTokens(TokenBank.BLUE)
+                + " GREEN=" + player.getTokens(TokenBank.GREEN)
+                + " RED=" + player.getTokens(TokenBank.RED)
+                + " BLACK=" + player.getTokens(TokenBank.BLACK)
+                + " GOLD=" + player.getTokens(TokenBank.GOLD)
+                + " | total=" + player.totalTokens());
     }
 
-    /**
-     * Returns number if input is valid number and null if command is back
-     * @param sc Scanner
-     * @param prompt Prompt for input
-     * @return number if input is valid number, null if command is back
-     */
-    private static Integer readIntOrBack(Scanner sc, String prompt) {
-        while (true) {
-            if (prompt != null && !prompt.isBlank()) {
-                System.out.print(prompt);
-            }
-
-            String line = sc.nextLine().trim();
-            if (isBackCommand(line)) {
-                return null;
-            }
-
-            try {
-                return Integer.parseInt(line);
-            } catch (NumberFormatException e) {
-                System.out.println("Please enter a valid number or type back.");
-                System.out.println();
-            }
-        }
-    }
 }

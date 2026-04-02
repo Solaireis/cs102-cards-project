@@ -1,3 +1,5 @@
 Splendor/classes/
 *.class
 Splendor/.vscode/launch.json
+**/out/
+**/out/
